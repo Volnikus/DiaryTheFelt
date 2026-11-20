@@ -93,13 +93,56 @@ export function CloudMascot() {
     try { localStorage.setItem("felt:nimbus-quiet", next ? "1" : "0"); } catch {}
   };
 
-  const send = async (e?: React.FormEvent) => {
+  const say = (content: string) => setMsgs((m) => [...m, { role: "assistant", content }]);
+  const hasComposer = () => Boolean((window as unknown as { __feltComposer?: boolean }).__feltComposer);
+
+  // The song the diary form picked after "pick a song" in chat.
+  useEffect(() => {
+    const onPicked = (e: Event) => {
+      const song = (e as CustomEvent<{ title: string; artist: string; reason: string } | null>).detail;
+      setBusy(false);
+      setMsgs((m) => [...m, { role: "assistant", content: song ? `“${song.title}” — ${song.artist}. ${song.reason} it's in “the song of the day” now.` : "i couldn't pick one yet — write a little more about the day first." }]);
+    };
+    window.addEventListener("felt:song-picked", onPicked);
+    return () => window.removeEventListener("felt:song-picked", onPicked);
+  }, []);
+
+  const lastQuoted = () => {
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].role !== "assistant") continue;
+      const c = msgs[i].content;
+      const m = c.match(/[“"«]([^”"»]{2,80})[”"»]/) ?? c.match(/\*\*([^*]{2,80})\*\*/);
+      if (m) return m[1].replace(/^(suggested )?title:\s*/i, "").trim();
+    }
+    return null;
+  };
+
+  const action = (label: string) => {
+    if (busy) return;
+    if (label === "use this title") {
+      const title = lastQuoted();
+      setMsgs((m) => [...m, { role: "user", content: label }]);
+      if (!title) return say("i haven't suggested a title yet — tap “suggest a title” first.");
+      if (!hasComposer()) return say(`open “new day” and i'll put “${title}” into the title field.`);
+      window.dispatchEvent(new CustomEvent("felt:use-title", { detail: title }));
+      return say(`done — “${title}” is in the title field.`);
+    }
+    if (label === "pick a song" && hasComposer()) {
+      setMsgs((m) => [...m, { role: "user", content: label }]);
+      setBusy(true);
+      window.dispatchEvent(new CustomEvent("felt:pick-song"));
+      return;
+    }
+    send(undefined, label);
+  };
+
+  const send = async (e?: React.FormEvent, preset?: string) => {
     e?.preventDefault();
-    const text = draft.trim();
+    const text = (preset ?? draft).trim();
     if (!text || busy) return;
     const next = [...msgs, { role: "user" as const, content: text }];
     setMsgs(next);
-    setDraft("");
+    if (!preset) setDraft("");
     setBusy(true);
     try {
       const res = await fetch("/api/ai/chat", {
@@ -199,7 +242,7 @@ export function CloudMascot() {
               </div>
               <div className={s.chips}>
                 {(msgs.length > 1 ? ["use this title", "pick a song", "another prompt"] : ["suggest a title", "pick a song", "give me a prompt"]).map((q) => (
-                  <button key={q} type="button" onClick={() => setDraft(q)}><i />{q}</button>
+                  <button key={q} type="button" onClick={() => action(q)}><i />{q}</button>
                 ))}
               </div>
               <form className={s.form} onSubmit={send}>

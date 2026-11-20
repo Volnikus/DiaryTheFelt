@@ -19,7 +19,7 @@
 @keyframes thump { 0% { transform: scale(1.6); box-shadow: 0 0 20px var(--safelight); } 50%, 100% { transform: scale(1); box-shadow: none; } }
 
 .arrow { display: grid; justify-items: center; gap: 8px; }
-.arrow span { position: relative; width: 2px; height: 140px; border-radius: 2px; background: rgba(151, 252, 228, 0.12); overflow: hidden; }
+.arrow span { position: relative; width: 2px; height: 140px; border-radius: 2px; background: rgba(255, 216, 61, 0.12); overflow: hidden; }
 .arrow span::after { content: ""; position: absolute; left: 0; right: 0; height: 40%; background: linear-gradient(transparent, var(--safelight), transparent); animation: flow 1.8s linear infinite; }
 @keyframes flow { from { top: -40%; } to { top: 100%; } }
 
@@ -41,11 +41,11 @@
 .outSwatches { position: absolute; z-index: 2; top: 16px; left: 16px; display: flex; gap: 3px; }
 .outSwatches i { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15); }
 
-.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--s-5); padding: 5px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.07); width: fit-content; max-width: 100%; }
-.tabs button { padding: 8px 14px; border-radius: 999px; font-size: 0.86rem; font-weight: 560; color: var(--paper-dim); transition: background var(--d-mid) var(--ease-out), color var(--d-fast); }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--s-5); padding: 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.07); width: fit-content; max-width: 100%; }
+.tabs button { padding: 8px 14px; border-radius: 4px; font-size: 0.86rem; font-weight: 560; color: var(--paper-dim); transition: background var(--d-mid) var(--ease-out), color var(--d-fast); }
 .tabs button:hover { color: var(--paper); }
 .tabs button[aria-selected="true"] { background: rgba(255, 255, 255, 0.11); color: var(--paper); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1); }
-.tabNo { font-size: 0.78rem; font-weight: 600; color: var(--safelight); margin-right: 6px; }
+.tabNo { font-size: 0.78rem; font-weight: 500; color: var(--safelight); margin-right: 6px; }
 
 @media (max-width: 860px) {
   .scene { grid-template-columns: 1fr; transform: none; }

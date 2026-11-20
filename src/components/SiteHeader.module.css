@@ -21,10 +21,10 @@
 .brand svg { transition: transform 500ms var(--ease-spring); }
 .brand b { font-weight: 500; font-size: 1.5rem; letter-spacing: -0.07em; text-transform: lowercase; }
 .links { position: relative; display: flex; gap: 2px; }
-.link { position: relative; padding: 8px 14px; border-radius: 999px; font-size: 0.95rem; font-weight: 500; text-transform: lowercase; color: var(--paper-dim); transition: color var(--d-fast); }
+.link { position: relative; padding: 8px 14px; border-radius: 4px; font-size: 0.95rem; font-weight: 500; text-transform: lowercase; color: var(--paper-dim); transition: color var(--d-fast); }
 .link:hover, .link[aria-current="page"] { color: var(--paper); }
 .link span { position: relative; z-index: 1; }
-.active { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; pointer-events: none; transition: transform 520ms var(--ease-spring), width 520ms var(--ease-spring), opacity var(--d-fast); background: transparent; border-bottom: 2px solid var(--accent); border-radius: 0; }
+.active { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; pointer-events: none; transition: transform 520ms var(--ease-spring), width 520ms var(--ease-spring), opacity var(--d-fast); background: transparent; border-bottom: 2px solid var(--accent); border-radius: 0; }
 .cta { margin-left: 4px; }
 .plus { display: none; }
 @media (max-width: 520px) {

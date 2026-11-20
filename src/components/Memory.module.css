@@ -1,6 +1,6 @@
 .memory { position: relative; min-height: 100vh; background: var(--m-ground); color: var(--m-ink); overflow-x: clip; }
 .memory ::selection { background: var(--m-accent); color: var(--m-ground); }
-.kicker { font-size: 0.88rem; font-weight: 600; letter-spacing: -0.01em; color: var(--m-muted); margin: 0 0 var(--s-4); }
+.kicker { font-size: 0.88rem; font-weight: 500; letter-spacing: -0.01em; color: var(--m-muted); margin: 0 0 var(--s-4); }
 .small { font-size: 0.85rem; color: var(--m-muted); margin: var(--s-3) 0 0; }
 
 .stage { position: relative; min-height: 100svh; display: grid; isolation: isolate; overflow: hidden; }
@@ -37,15 +37,15 @@
   padding: var(--s-5) var(--gutter) max(var(--s-5), env(safe-area-inset-bottom));
 }
 .playMemory {
-  display: inline-flex; align-items: center; gap: 12px; padding: 12px 22px 12px 12px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 12px; padding: 12px 22px 12px 12px; border-radius: 4px;
   background: var(--m-ink); color: var(--m-ground);
-  font-size: 0.95rem; font-weight: 620; letter-spacing: -0.01em;
+  font-size: 0.95rem; font-weight: 500; letter-spacing: -0.01em;
   box-shadow: 0 12px 40px -12px color-mix(in srgb, var(--m-accent) 70%, transparent);
   transition: transform 500ms var(--ease-spring), box-shadow var(--d-mid);
 }
 .playMemory:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 18px 50px -10px color-mix(in srgb, var(--m-accent) 90%, transparent); }
 .playIcon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--m-accent); color: var(--m-ground); font-size: 0.7rem; animation: beat var(--m-beat) var(--m-ease) infinite; }
-.soundToggle { padding: 13px 20px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--m-ink) 22%, transparent); background: color-mix(in srgb, var(--m-surface) 78%, transparent); font-size: 0.92rem; font-weight: 600; transition: background var(--d-fast), transform 500ms var(--ease-spring); }
+.soundToggle { padding: 13px 20px; border-radius: 4px; border: 1px solid color-mix(in srgb, var(--m-ink) 22%, transparent); background: color-mix(in srgb, var(--m-surface) 78%, transparent); font-size: 0.92rem; font-weight: 500; transition: background var(--d-fast), transform 500ms var(--ease-spring); }
 .soundToggle:hover { transform: translateY(-2px); background: color-mix(in srgb, var(--m-surface) 75%, transparent); }
 @keyframes beat { 0% { transform: scale(1.12); } 40% { transform: scale(1); } 100% { transform: scale(1); } }
 
@@ -89,7 +89,7 @@
 .print img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; filter: var(--m-filter); }
 .tape { position: absolute; top: -10px; left: 30%; width: 80px; height: 22px; background: color-mix(in srgb, var(--m-accent) 75%, transparent); transform: rotate(-4deg); }
 .sticker { position: absolute; right: 4%; bottom: 0; width: 96px; height: 96px; border-radius: 50%; background: var(--m-accent2); color: var(--m-ground); display: grid; place-content: center; text-align: center; font-family: var(--font-sans); font-weight: 800; font-size: 1.8rem; line-height: 0.9; animation: beat var(--m-beat) var(--m-ease) infinite; }
-.sticker small { display: block; font-size: 0.66rem; font-weight: 600; }
+.sticker small { display: block; font-size: 0.66rem; font-weight: 500; }
 .collageText { position: relative; z-index: 2; margin-top: var(--s-5); }
 @keyframes drop { from { opacity: 0; transform: translateY(-40px) rotate(calc(var(--r) * 3)); } to { opacity: 1; transform: rotate(var(--r)); } }
 @keyframes bob { to { translate: 0 -6px; } }
@@ -122,41 +122,41 @@
 .entrySection, .gallery, .musicSection, .explain, .actions { position: relative; max-width: var(--max); margin: 0 auto; padding: var(--s-9) var(--gutter) 0; }
 .entryGrid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr); gap: clamp(32px, 6vw, 110px); }
 .entryAside .atmosLine { margin-top: 0; }
-.demoTag { display: inline-block; font-size: 0.78rem; font-weight: 600; border: 1px solid var(--m-accent); color: var(--m-accent); padding: 3px 10px; border-radius: 99px; margin: 0 0 var(--s-5); }
+.demoTag { display: inline-block; font-size: 0.78rem; font-weight: 500; border: 1px solid var(--m-accent); color: var(--m-accent); padding: 3px 10px; border-radius: 4px; margin: 0 0 var(--s-5); }
 .events { list-style: none; padding: 0; margin: var(--s-6) 0 0; counter-reset: ev; border-top: 1px solid color-mix(in srgb, var(--m-ink) 15%, transparent); }
 .events li { counter-increment: ev; padding: 12px 0; border-bottom: 1px solid color-mix(in srgb, var(--m-ink) 15%, transparent); font-size: 0.92rem; display: flex; gap: 14px; }
-.events li::before { content: counter(ev); font-size: 0.78rem; font-weight: 600; color: var(--m-accent); padding-top: 4px; }
+.events li::before { content: counter(ev); font-size: 0.78rem; font-weight: 500; color: var(--m-accent); padding-top: 4px; }
 .entryText p:not(.kicker) { font-size: clamp(1.1rem, 1.5vw, 1.32rem); line-height: 1.7; margin: 0 0 1.1em; max-width: 62ch; }
 .entryText p:nth-of-type(2)::first-letter { font-weight: 200; font-size: 4.2em; float: left; line-height: 0.8; padding: 0.06em 0.1em 0 0; color: var(--m-accent); }
 
 .galleryGrid { columns: 3 260px; column-gap: var(--s-5); }
 .galleryItem { break-inside: avoid; margin: 0 0 var(--s-5); position: relative; }
-.galleryItem img { width: 100%; height: auto; filter: var(--m-filter); background: var(--m-surface); border-radius: 16px; transition: transform 700ms var(--ease-out), box-shadow var(--d-mid); }
+.galleryItem img { width: 100%; height: auto; filter: var(--m-filter); background: var(--m-surface); border-radius: 4px; transition: transform 700ms var(--ease-out), box-shadow var(--d-mid); }
 .galleryItem:hover img { transform: translateY(-4px) scale(1.015); box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6); }
 .galleryItem figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding-top: 10px; font-size: 0.78rem; font-weight: 500; color: var(--m-muted); }
 .swatchRow { display: inline-flex; gap: 3px; }
 .swatchRow i { width: 11px; height: 11px; border-radius: 50%; }
 .credit { text-decoration: underline; text-underline-offset: 3px; }
 
-.player { display: flex; gap: var(--s-5); align-items: center; padding: var(--s-5); background: color-mix(in srgb, var(--m-surface) 70%, transparent); border: 1px solid color-mix(in srgb, var(--m-ink) 10%, transparent); border-radius: 24px; box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent), 0 24px 60px -30px color-mix(in srgb, var(--m-accent) 60%, transparent); }
+.player { display: flex; gap: var(--s-5); align-items: center; padding: var(--s-5); background: color-mix(in srgb, var(--m-surface) 70%, transparent); border: 1px solid color-mix(in srgb, var(--m-ink) 10%, transparent); border-radius: 4px; box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent), 0 24px 60px -30px color-mix(in srgb, var(--m-accent) 60%, transparent); }
 .bigPlay { flex: none; width: 64px; height: 64px; border-radius: 50%; background: var(--m-accent); color: var(--m-ground); font-size: 1.1rem; display: grid; place-items: center; box-shadow: 0 0 0 6px color-mix(in srgb, var(--m-accent) 18%, transparent); transition: transform 500ms var(--ease-spring), box-shadow var(--d-mid); }
 .bigPlay:hover { transform: scale(1.08); box-shadow: 0 0 0 10px color-mix(in srgb, var(--m-accent) 14%, transparent); }
 .playerBody { flex: 1; min-width: 0; }
-.songName { margin: 0 0 var(--s-2); font-weight: 650; letter-spacing: -0.025em; font-size: clamp(1.3rem, 2.4vw, 1.9rem); line-height: 1.1; }
+.songName { margin: 0 0 var(--s-2); font-weight: 500; letter-spacing: -0.025em; font-size: clamp(1.3rem, 2.4vw, 1.9rem); line-height: 1.1; }
 .scrub { cursor: pointer; padding: 6px 0; }
 .musicStats { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: var(--s-2) 0 0; font-size: 0.8rem; font-weight: 500; color: var(--m-muted); }
 .linkPlayer { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--s-6); align-items: center; }
 .linkMeta .btn { margin-top: var(--s-4); color: var(--m-ink); }
-.embed { width: 100%; height: 152px; border: 0; border-radius: 12px; }
+.embed { width: 100%; height: 152px; border: 0; border-radius: 4px; }
 .embedVideo { width: 100%; aspect-ratio: 16 / 9; border: 0; }
 .narration { margin-top: var(--s-6); }
 .narration audio { width: min(420px, 100%); }
 
 .explainHead { margin-bottom: var(--s-6); }
-.explainTitle { font-weight: 650; letter-spacing: -0.04em; font-size: var(--t-1); line-height: 0.95; margin: 0; }
+.explainTitle { font-weight: 500; letter-spacing: -0.04em; font-size: var(--t-1); line-height: 0.95; margin: 0; }
 .explainGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-4); }
-.explainCol, .readouts > div { padding: var(--s-5); border-radius: 22px; background: color-mix(in srgb, var(--m-surface) 55%, transparent); border: 1px solid color-mix(in srgb, var(--m-ink) 9%, transparent); }
-.explainCol h3, .readouts h3 { font-weight: 650; font-size: 0.92rem; letter-spacing: -0.01em; color: var(--m-accent); margin: 0 0 var(--s-4); }
+.explainCol, .readouts > div { padding: var(--s-5); border-radius: 4px; background: color-mix(in srgb, var(--m-surface) 55%, transparent); border: 1px solid color-mix(in srgb, var(--m-ink) 9%, transparent); }
+.explainCol h3, .readouts h3 { font-weight: 500; font-size: 0.92rem; letter-spacing: -0.01em; color: var(--m-accent); margin: 0 0 var(--s-4); }
 .explainCol ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-4); }
 .explainCol li { display: grid; gap: 4px; font-size: 0.92rem; line-height: 1.45; }
 .exIn { color: var(--m-muted); font-size: 0.82rem; }
@@ -180,7 +180,7 @@
 .actions :global(.btn-danger) { color: #d4442f; border-color: rgba(212, 68, 47, 0.45); }
 .light .actions :global(.input) { background: var(--m-surface); color: var(--m-ink); border-color: color-mix(in srgb, var(--m-ink) 25%, transparent); }
 .renameForm { display: flex; gap: var(--s-2); max-width: 560px; }
-.confirm { padding: var(--s-5); border: 1px solid rgba(212, 68, 47, 0.5); border-radius: 18px; max-width: 560px; background: color-mix(in srgb, var(--m-surface) 60%, transparent); animation: fadeIn 300ms var(--ease-out); }
+.confirm { padding: var(--s-5); border: 1px solid rgba(212, 68, 47, 0.5); border-radius: 4px; max-width: 560px; background: color-mix(in srgb, var(--m-surface) 60%, transparent); animation: fadeIn 300ms var(--ease-out); }
 .confirm p { margin: 0 0 var(--s-4); }
 
 .reel { position: fixed; inset: 0; z-index: 200; background: var(--m-ground); color: var(--m-ink); display: grid; overflow: hidden; animation: fadeIn 600ms var(--ease-out); }
@@ -207,7 +207,7 @@
 .reelBar :global(.btn) { color: #fff; border-color: rgba(255, 255, 255, 0.5); }
 .reelBar :global(.btn-light) { color: #111; background: #fff; }
 .reelMeta { font-size: 0.84rem; font-weight: 500; opacity: 0.9; }
-.reelEmbed { position: absolute; z-index: 4; right: var(--gutter); top: 84px; width: min(360px, calc(100vw - 2 * var(--gutter))); height: 152px; border: 0; border-radius: 12px; }
+.reelEmbed { position: absolute; z-index: 4; right: var(--gutter); top: 84px; width: min(360px, calc(100vw - 2 * var(--gutter))); height: 152px; border: 0; border-radius: 4px; }
 
 @media (max-width: 860px) {
   .compFilm { grid-template-columns: 1fr; padding-top: 96px; }

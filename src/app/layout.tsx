@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "Write about your day, add photographs and a song. Felt develops them into an artistic memory you can return to.",
 };
 
-export const viewport: Viewport = { themeColor: "#11110F", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#12131C", width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,11 +1,14 @@
 import "server-only";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { del, get, list, put } from "@vercel/blob";
 import postgres from "postgres";
 import type { Entry, EntrySummary } from "../types";
 import { DEMO_OWNER } from "./owner-token";
 
-export const DB_DRIVER: "postgres" | "file" = process.env.DATABASE_URL ? "postgres" : "file";
+// Postgres when DATABASE_URL is set; otherwise Vercel Blob (the same store as
+// the photos) when BLOB_READ_WRITE_TOKEN is set; otherwise a local JSON file.
+export const DB_DRIVER: "postgres" | "blob" | "file" = process.env.DATABASE_URL ? "postgres" : process.env.BLOB_READ_WRITE_TOKEN ? "blob" : "file";
 export const DATA_ROOT = process.env.VERCEL ? "/tmp/felt" : path.join(process.cwd(), ".data");
 
 export interface ListQuery {
@@ -188,4 +191,60 @@ const fileRepo: Repo = {
   },
 };
 
-export const repo: Repo = DB_DRIVER === "postgres" ? postgresRepo : fileRepo;
+/* ---------- Vercel Blob: one private JSON blob per entry + one per summary ---------- */
+
+const entryPath = (owner: string, id: string) => `db/entries/${owner}/${id}.json`;
+const summaryPath = (owner: string, id: string) => `db/summaries/${owner}/${id}.json`;
+
+async function readJson<T>(pathname: string): Promise<T | null> {
+  const res = await get(pathname, { access: "private", useCache: false }).catch(() => null);
+  if (!res || res.statusCode !== 200) return null;
+  return (await new Response(res.stream).json()) as T;
+}
+
+async function writeJson(pathname: string, data: unknown) {
+  await put(pathname, JSON.stringify(data), { access: "private", contentType: "application/json", addRandomSuffix: false, allowOverwrite: true, cacheControlMaxAge: 60 });
+}
+
+async function listPaths(prefix: string): Promise<string[]> {
+  const out: string[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await list({ prefix, cursor, limit: 1000 });
+    out.push(...page.blobs.map((b) => b.pathname));
+    cursor = page.hasMore ? page.cursor : undefined;
+  } while (cursor);
+  return out;
+}
+
+const idOf = (pathname: string) => pathname.slice(pathname.lastIndexOf("/") + 1, -".json".length);
+
+const blobRepo: Repo = {
+  async list(owner, q) {
+    const paths = [...(await listPaths(`db/summaries/${owner}/`)), ...(owner === DEMO_OWNER ? [] : await listPaths(`db/summaries/${DEMO_OWNER}/`))];
+    const all = await Promise.all(paths.map((p) => readJson<EntrySummary>(p)));
+    return all.filter((s): s is EntrySummary => Boolean(s)).filter((s) => matches(s, q)).sort(byDay);
+  },
+  async get(owner, id) {
+    return (await readJson<Entry>(entryPath(owner, id))) ?? (owner === DEMO_OWNER ? null : await readJson<Entry>(entryPath(DEMO_OWNER, id)));
+  },
+  async save(e) {
+    await Promise.all([writeJson(entryPath(e.owner, e.id), e), writeJson(summaryPath(e.owner, e.id), summarize(e))]);
+  },
+  async remove(owner, id) {
+    const exists = await readJson<Entry>(entryPath(owner, id));
+    if (!exists) return false;
+    await del([entryPath(owner, id), summaryPath(owner, id)]);
+    return true;
+  },
+  async hasDemos(ids) {
+    const have = new Set((await listPaths(`db/entries/${DEMO_OWNER}/`)).map(idOf));
+    return ids.every((id) => have.has(id));
+  },
+  async removeStaleDemos(keep) {
+    const stale = (await listPaths(`db/entries/${DEMO_OWNER}/`)).map(idOf).filter((id) => !keep.includes(id));
+    if (stale.length) await del(stale.flatMap((id) => [entryPath(DEMO_OWNER, id), summaryPath(DEMO_OWNER, id)]));
+  },
+};
+
+export const repo: Repo = DB_DRIVER === "postgres" ? postgresRepo : DB_DRIVER === "blob" ? blobRepo : fileRepo;

@@ -7,7 +7,7 @@ import { analyzeSamples } from "../analysis/audio";
 
 export interface AppConfig {
   storage: "blob" | "local";
-  database: "postgres" | "file";
+  database: "postgres" | "blob" | "file";
   persistent: boolean;
 }
 

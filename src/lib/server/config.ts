@@ -7,6 +7,6 @@ export function appConfig(): AppConfig {
   return {
     storage: STORAGE_DRIVER,
     database: DB_DRIVER,
-    persistent: !process.env.VERCEL || (STORAGE_DRIVER === "blob" && DB_DRIVER === "postgres"),
+    persistent: !process.env.VERCEL || (STORAGE_DRIVER === "blob" && DB_DRIVER !== "file"),
   };
 }

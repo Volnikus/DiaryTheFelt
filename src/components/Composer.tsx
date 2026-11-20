@@ -81,8 +81,8 @@ export function Composer({ config, initial }: { config: AppConfig; initial?: Ent
   const [picking, setPicking] = useState(false);
   const [naming, setNaming] = useState(false);
 
-  const pickSong = useCallback(async () => {
-    if (text.trim().length < 12) return setError("Write a little about the day first, so the AI knows what to pick.");
+  const pickSong = useCallback(async (): Promise<{ title: string; artist: string; reason: string } | null> => {
+    if (text.trim().length < 12) { setError("Write a little about the day first, so the AI knows what to pick."); return null; }
     setPicking(true);
     setError(null);
     try {
@@ -95,12 +95,33 @@ export function Composer({ config, initial }: { config: AppConfig; initial?: Ent
         preview: { provider: "other", embedUrl: null, title: json.title, artist: json.artist, thumbnail: null, url: json.url },
         feel: { bpm: Math.round(json.bpm), energy: json.energy, mode: json.mode },
       });
+      return { title: json.title, artist: json.artist, reason: json.reason };
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not pick a song");
+      return null;
     } finally {
       setPicking(false);
     }
   }, [text, wish]);
+
+  // Nimbus chat actions: "use this title" and "pick a song" act on this form.
+  useEffect(() => {
+    const w = window as unknown as { __feltComposer?: boolean };
+    w.__feltComposer = true;
+    const useTitle = (e: Event) => setTitle((e as CustomEvent<string>).detail.slice(0, 80));
+    const pick = async () => {
+      const song = await pickSong();
+      window.dispatchEvent(new CustomEvent("felt:song-picked", { detail: song }));
+      if (song) document.getElementById("song-of-the-day")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+    window.addEventListener("felt:use-title", useTitle);
+    window.addEventListener("felt:pick-song", pick);
+    return () => {
+      w.__feltComposer = false;
+      window.removeEventListener("felt:use-title", useTitle);
+      window.removeEventListener("felt:pick-song", pick);
+    };
+  }, [pickSong]);
 
   // "Choose for me": pick once the day has enough words and no song is set yet.
   useEffect(() => {
@@ -339,7 +360,7 @@ export function Composer({ config, initial }: { config: AppConfig; initial?: Ent
           {touched && readyPhotos.length === 0 && <p className="notice error">Add at least one photograph.</p>}
         </section>
 
-        <section className={`glass ${s.block}`}>
+        <section id="song-of-the-day" className={`glass ${s.block}`}>
           <header className={s.blockHead}>
             <span className={s.num}><Icon name="music" size={18} /></span>
             <h2>The song of the day</h2>
@@ -469,7 +490,7 @@ export function Composer({ config, initial }: { config: AppConfig; initial?: Ent
 
           <p className={s.fine}>Photographs and music are analysed in your browser. If AI is switched on for this diary, your words are sent to an AI model to name the day, pick a song and chat.</p>
 
-          {!config.persistent && <p className="notice">Storage on this deployment is temporary. Configure a database and Blob store to keep memories.</p>}
+          {!config.persistent && <p className="notice">Storage on this deployment is temporary. Connect a Vercel Blob store to keep memories.</p>}
           {error && <p className="notice error" role="alert">{error}</p>}
 
           <button type="button" className={`btn btn-primary ${s.develop} ${canDevelop ? s.ready : ""}`} onClick={develop} disabled={Boolean(phase) || busyPhotos}>

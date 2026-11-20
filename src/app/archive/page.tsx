@@ -15,7 +15,8 @@ export default async function ArchivePage() {
     <main className="wrap" style={{ paddingTop: "var(--s-7)", paddingBottom: "var(--s-9)" }}>
       <header style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "end", gap: 24, marginBottom: "var(--s-7)" }}>
         <div>
-          <h1 className="display" style={{ fontSize: "var(--t-1)" }}>
+          <p className="meta section-label" style={{ marginBottom: "var(--s-4)" }}>archive</p>
+          <h1 className="display" style={{ fontSize: "clamp(3rem, 8vw, 7rem)" }}>
             Days, <em>developed.</em>
           </h1>
         </div>
