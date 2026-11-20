@@ -2,7 +2,21 @@
 
 import { AnimatePresence, motion, useAnimationControls } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { countMood } from "@/lib/analysis/mood";
 import s from "./CloudMascot.module.css";
+
+// Cloud puffs around the chat panel walls: random sizes, seeded so they stay put.
+const PUFFS = (() => {
+  let seed = 11;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const out: { x: number; y: number; r: number }[] = [];
+  for (let d = rnd() * 4; d < 400; d += 7 + rnd() * 6) {
+    const side = Math.floor(d / 100), t = d % 100;
+    const [x, y] = side === 0 ? [t, 0] : side === 1 ? [100, t] : side === 2 ? [100 - t, 100] : [0, 100 - t];
+    out.push({ x: x + (rnd() - 0.5) * 4, y: y + (rnd() - 0.5) * 4, r: 50 + rnd() * 45 });
+  }
+  return out;
+})();
 
 const PHRASES = [
   "take your time.",
@@ -35,6 +49,11 @@ export function CloudMascot() {
   const [busy, setBusy] = useState(false);
   const controls = useAnimationControls();
   const list = useRef<HTMLDivElement>(null);
+  const context = open ? getContext() : undefined;
+  const mood = context ? countMood(context) : null;
+  const moodLine = mood && mood.hits.length
+    ? `today feels ${mood.mood} · +${mood.positive} / −${mood.negative}`
+    : "start writing — nimbus will see how today feels";
 
   // Drift slowly to a new spot along the edges every ~14s.
   useEffect(() => {
@@ -133,38 +152,66 @@ export function CloudMascot() {
 
       <AnimatePresence>
         {open && (
-          <motion.section
-            className={s.panel}
-            role="dialog"
-            aria-label="Chat with Nimbus"
-            initial={{ opacity: 0, y: 40, scale: 0.92, clipPath: "inset(100% 0 0 0 round 4px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, clipPath: "inset(0% 0 0 0 round 4px)" }}
-            exit={{ opacity: 0, y: 30, scale: 0.95, clipPath: "inset(100% 0 0 0 round 4px)" }}
+          <motion.div
+            className={s.wrap}
+            initial={{ opacity: 0, y: 40, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.92 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            <header className={s.head}>
-              <p><i /> nimbus</p>
-              <span>chat</span>
-            </header>
-            <div className={s.list} ref={list}>
-              {msgs.map((m, i) => (
-                <motion.p key={i} className={s.msg} data-role={m.role} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
-                  {m.content}
-                </motion.p>
-              ))}
-              {busy && <p className={s.msg} data-role="assistant"><span className={s.dots}><i /><i /><i /></span></p>}
-            </div>
-            <div className={s.chips}>
-              {["suggest a title", "pick a song", "give me a prompt"].map((q) => (
-                <button key={q} type="button" onClick={() => setDraft(q)}>{q}</button>
+            <div className={s.puffs} aria-hidden>
+              {PUFFS.map((p, i) => (
+                <motion.i
+                  key={i}
+                  style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.r, height: p.r }}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ scale: { duration: 4 + (i % 5), repeat: Infinity, ease: "easeInOut", delay: i * 0.05 } }}
+                />
               ))}
             </div>
-            <form className={s.form} onSubmit={send}>
-              <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="write to nimbus…" maxLength={4000} aria-label="Message" autoFocus />
-              <button type="submit" className={s.send} disabled={!draft.trim() || busy}>send</button>
-            </form>
-            <button type="button" className={s.quiet} onClick={toggleQuiet}>{quiet ? "let nimbus speak again" : "keep nimbus quiet"}</button>
-          </motion.section>
+            <section className={s.panel} role="dialog" aria-label="Chat with Nimbus">
+              <header className={s.head}>
+                <svg className={s.avatar} viewBox="0 0 120 80" aria-hidden>
+                  <path d="M30 70 C12 70 6 56 12 46 C6 32 22 20 36 26 C40 10 66 6 74 22 C88 14 106 24 102 40 C116 46 112 70 94 70 Z" fill="#fff" stroke="#11110F" strokeWidth="4" />
+                  <rect x="44" y="40" width="7" height="11" rx="2" fill="#11110F" />
+                  <rect x="69" y="40" width="7" height="11" rx="2" fill="#11110F" />
+                  <path d="M54 57 Q60 62 66 57" fill="none" stroke="#11110F" strokeWidth="4" strokeLinecap="round" />
+                  <rect x="34" y="52" width="9" height="5" rx="2.5" fill="#FFD83D" />
+                  <rect x="77" y="52" width="9" height="5" rx="2.5" fill="#FFD83D" />
+                </svg>
+                <div className={s.title}>
+                  <p>nimbus</p>
+                  <span><i />{context ? "listening · reads what you write" : "floating nearby"}</span>
+                </div>
+                <button type="button" className={s.esc} onClick={() => setOpen(false)} aria-label="Close chat">esc</button>
+              </header>
+              <p className={s.context}>{moodLine}</p>
+              <div className={s.list} ref={list}>
+                {msgs.map((m, i) => (
+                  <motion.div key={i} className={s.msg} data-role={m.role} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
+                    <p>{m.content}</p>
+                    <small>{m.role === "assistant" ? "nimbus" : "you"} · now</small>
+                  </motion.div>
+                ))}
+                {msgs.length === 1 && <p className={s.hint}>i only answer when you ask. tap a suggestion or write anything.</p>}
+                {busy && <div className={s.msg} data-role="assistant"><span className={s.dots}><i /><i /><i /></span></div>}
+              </div>
+              <div className={s.chips}>
+                {(msgs.length > 1 ? ["use this title", "pick a song", "another prompt"] : ["suggest a title", "pick a song", "give me a prompt"]).map((q) => (
+                  <button key={q} type="button" onClick={() => setDraft(q)}><i />{q}</button>
+                ))}
+              </div>
+              <form className={s.form} onSubmit={send}>
+                <input value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Escape" && setOpen(false)} placeholder="write to nimbus…" maxLength={4000} aria-label="Message" autoFocus />
+                <button type="submit" className={s.send} disabled={!draft.trim() || busy}><i />send</button>
+              </form>
+              <footer className={s.foot}>
+                <button type="button" className={s.quiet} role="switch" aria-checked={quiet} onClick={toggleQuiet}><span><i /></span>quiet mode</button>
+                <small>answers by claude · kept private</small>
+              </footer>
+            </section>
+          </motion.div>
         )}
       </AnimatePresence>
     </>
