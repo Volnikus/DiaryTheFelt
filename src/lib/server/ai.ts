@@ -4,16 +4,41 @@ import { z } from "zod/v4";
 import { analyzeTextLocally } from "../analysis/text";
 import { countMood } from "../analysis/mood";
 
-// Claude is optional. Without ANTHROPIC_API_KEY every feature falls back to
-// Felt's own local algorithms, so the diary keeps working offline.
+// AI is optional. Keys come only from environment variables (Vercel settings or
+// a local .env that git ignores) — never from the code.
+// XAI_API_KEY → Grok (xAI), ANTHROPIC_API_KEY → Claude. Without either, every
+// feature falls back to Felt's own local algorithms.
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-opus-5-5";
-export const aiEnabled = () => Boolean(process.env.ANTHROPIC_API_KEY);
+const XAI_MODEL = process.env.XAI_MODEL || "grok-4.20-non-reasoning";
+export const aiEnabled = () => Boolean(process.env.XAI_API_KEY || process.env.ANTHROPIC_API_KEY);
+
+async function askXai(system: string, messages: Anthropic.MessageParam[], maxTokens: number): Promise<string | null> {
+  try {
+    const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${process.env.XAI_API_KEY}` },
+      body: JSON.stringify({
+        model: XAI_MODEL,
+        max_tokens: maxTokens,
+        messages: [{ role: "system", content: system }, ...messages.map((m) => ({ role: m.role, content: typeof m.content === "string" ? m.content : "" }))],
+      }),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!res.ok) { console.error("[ai:xai]", res.status, (await res.text()).slice(0, 200)); return null; }
+    const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+    return json.choices?.[0]?.message?.content?.trim() || null;
+  } catch (err) {
+    console.error("[ai:xai]", err);
+    return null;
+  }
+}
 
 let client: Anthropic | null = null;
 const getClient = () => (client ??= new Anthropic());
 
 async function ask(system: string, messages: Anthropic.MessageParam[], maxTokens = 1024): Promise<string | null> {
-  if (!aiEnabled()) return null;
+  if (process.env.XAI_API_KEY) return askXai(system, messages, maxTokens);
+  if (!process.env.ANTHROPIC_API_KEY) return null;
   try {
     const res = await getClient().messages.create({
       model: MODEL,

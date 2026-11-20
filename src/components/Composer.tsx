@@ -467,7 +467,7 @@ export function Composer({ config, initial }: { config: AppConfig; initial?: Ent
             <input className="input" value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} placeholder={editing && initial ? initial.title : "Leave empty — AI will name it for you"} />
           </label>
 
-          <p className={s.fine}>Photographs and music are analysed in your browser. If AI is switched on for this diary, your words are sent to Claude to name the day, pick a song and chat.</p>
+          <p className={s.fine}>Photographs and music are analysed in your browser. If AI is switched on for this diary, your words are sent to an AI model to name the day, pick a song and chat.</p>
 
           {!config.persistent && <p className="notice">Storage on this deployment is temporary. Configure a database and Blob store to keep memories.</p>}
           {error && <p className="notice error" role="alert">{error}</p>}

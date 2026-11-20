@@ -208,7 +208,7 @@ export function CloudMascot() {
               </form>
               <footer className={s.foot}>
                 <button type="button" className={s.quiet} role="switch" aria-checked={quiet} onClick={toggleQuiet}><span><i /></span>quiet mode</button>
-                <small>answers by claude · kept private</small>
+                <small>answers by ai · kept private</small>
               </footer>
             </section>
           </motion.div>
