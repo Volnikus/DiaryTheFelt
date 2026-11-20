@@ -3,6 +3,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod/v4";
 import { analyzeTextLocally } from "../analysis/text";
 import { countMood } from "../analysis/mood";
+import { cleanInput, fence, looksLikeExtraction, scrubReply } from "./guard";
+import { MUSIC_SYSTEM, NIMBUS_SYSTEM, REFUSAL_SECRET, TITLE_SYSTEM } from "./prompts";
 
 // AI is optional. Keys come only from environment variables (Vercel settings or
 // a local .env that git ignores) — never from the code.
@@ -70,13 +72,9 @@ function parseJson<T>(raw: string | null, schema: z.ZodType<T>): T | null {
 /* ---------- title ---------- */
 
 export async function aiTitle(text: string): Promise<{ title: string; source: "ai" | "local" }> {
-  const out = await ask(
-    "You name diary entries. Reply with ONLY a title: 2–6 words, evocative but plain, no quotes, no emoji, no trailing punctuation. Match the language of the entry.",
-    [{ role: "user", content: text.slice(0, 6000) }],
-    60,
-  );
-  const clean = out?.split("\n")[0].replace(/^["'«“]+|["'»”.]+$/g, "").trim();
-  if (clean && clean.length <= 80) return { title: clean, source: "ai" };
+  const out = await ask(TITLE_SYSTEM, [{ role: "user", content: fence("diary_text", cleanInput(text, 6000)) }], 60);
+  const clean = out ? scrubReply(out, 200).split("\n")[0].replace(/^["'«“]+|["'»”.]+$/g, "").trim() : null;
+  if (clean && clean !== REFUSAL_SECRET && clean.length <= 80 && clean.split(/\s+/).length <= 8) return { title: clean, source: "ai" };
   return { title: analyzeTextLocally(text).title, source: "local" };
 }
 
@@ -106,14 +104,10 @@ const songUrl = (s: { title: string; artist: string }) =>
   `https://www.last.fm/music/${encodeURIComponent(s.artist).replace(/%20/g, "+")}/_/${encodeURIComponent(s.title).replace(/%20/g, "+")}`;
 
 export async function aiMusic(text: string, wish?: string): Promise<SongPick> {
-  const out = await ask(
-    `You pick ONE real, well-known, existing song for a diary entry. Prefer calm, kind choices that fit the mood; suitable for all ages, no explicit lyrics.
-Reply with ONLY JSON: {"title":string,"artist":string,"bpm":number,"energy":0..1,"mode":"major"|"minor","reason":"one short friendly sentence"}`,
-    [{ role: "user", content: `Diary entry:\n${text.slice(0, 5000)}${wish ? `\n\nWhat the writer wants from the music: ${wish.slice(0, 300)}` : ""}` }],
-    300,
-  );
+  const content = fence("diary_text", cleanInput(text, 5000)) + (wish ? `\n\n${fence("music_wish", cleanInput(wish, 300))}` : "");
+  const out = await ask(MUSIC_SYSTEM, [{ role: "user", content }], 300);
   const song = parseJson(out, Song);
-  if (song) return { ...song, url: songUrl(song), source: "ai" };
+  if (song && [song.title, song.artist, song.reason].every((v) => scrubReply(v, 300) === v.trim())) return { ...song, url: songUrl(song), source: "ai" };
   const pick = LOCAL_SONGS[countMood(text).mood][0];
   return { ...pick, url: songUrl(pick), source: "local" };
 }
@@ -121,18 +115,22 @@ Reply with ONLY JSON: {"title":string,"artist":string,"bpm":number,"energy":0..1
 /* ---------- chat ---------- */
 
 export const ChatIn = z.object({
-  messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) })).min(1).max(30),
+  messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) })).min(1).max(30)
+    .refine((m) => m.at(-1)?.role === "user", "The last message must come from you")
+    .refine((m) => m.reduce((n, x) => n + x.content.length, 0) <= 16000, "The conversation is too long — start a new one"),
   context: z.string().max(4000).optional(),
 });
 
 export async function aiChat(input: z.infer<typeof ChatIn>): Promise<{ reply: string; source: "ai" | "local" }> {
-  const system = `You are Nimbus, a small cloud who lives inside Felt, a gentle diary app. You talk with the writer about their day.
-Be warm, calm and brief (1–4 short sentences). Ask at most one question. Never lecture. Suitable for a young writer: kind, safe, no adult themes.
-If the writer mentions feeling unsafe, self-harm or a crisis, respond with care and encourage them to talk to a trusted adult or a local helpline right away.
-You can help: suggest a title, a song, a writing prompt, or reflect on feelings.
-Write plain text only: no markdown, no asterisks, no headings. When you suggest a title, give exactly one and put it in curly quotes like “Golden Hour Before the Exam”.${input.context ? `\n\nWhat they are writing right now:\n${input.context}` : ""}`;
-  const reply = await ask(system, input.messages, 400);
-  if (reply) return { reply, source: "ai" };
+  const last = input.messages.at(-1)!;
+  // Obvious attempts to pull out instructions, code or keys never reach the model.
+  if (last.role === "user" && looksLikeExtraction(last.content)) return { reply: REFUSAL_SECRET, source: "local" };
+
+  const context = input.context ? cleanInput(input.context, 4000) : "";
+  const system = context ? `${NIMBUS_SYSTEM}\n\n${fence("diary_text", context)}` : NIMBUS_SYSTEM;
+  const messages = input.messages.map((m) => ({ role: m.role, content: cleanInput(m.content, m.role === "user" ? 1500 : 800) }));
+  const reply = await ask(system, messages, 400);
+  if (reply) return { reply: scrubReply(reply), source: "ai" };
   return { reply: localReply(input.messages.at(-1)!.content, input.context), source: "local" };
 }
 

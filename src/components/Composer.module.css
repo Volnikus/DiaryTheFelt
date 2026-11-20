@@ -1,4 +1,4 @@
-.composer { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: clamp(20px, 3vw, 40px); align-items: start; }
+.composer { transition: --accent 3s ease, --day-glow 3s ease, --day-ground 3s ease; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: clamp(20px, 3vw, 40px); align-items: start; }
 .main { display: grid; gap: var(--s-4); min-width: 0; }
 
 .block { display: grid; gap: var(--s-4); padding: var(--s-5) 0 var(--s-7); border-radius: 0; animation: blockIn 700ms var(--ease-out) both; }
@@ -140,3 +140,12 @@
 .titleHead { display: flex; justify-content: space-between; align-items: center; }
 .suggest { font-size: 0.8rem; padding: 3px 8px; border-radius: 2.5px; background: var(--accent); color: #11110F; }
 .suggest:disabled { opacity: 0.5; }
+
+/* The page takes the colour of the day, slowly. */
+.dayAura {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 92% 4%, color-mix(in oklab, var(--day-glow) 20%, transparent), transparent 72%),
+    radial-gradient(50% 45% at 0% 100%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 70%),
+    linear-gradient(180deg, color-mix(in oklab, var(--day-ground) 6%, transparent), transparent 40%);
+}

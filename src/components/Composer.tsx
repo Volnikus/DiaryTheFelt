@@ -40,11 +40,11 @@ const PROMPTS = [
   "What did the air smell like?",
 ];
 
-export function Composer({ config, initial }: { config: AppConfig; initial?: Entry }) {
+export function Composer({ config, initial, draft }: { config: AppConfig; initial?: Entry; draft?: string }) {
   const router = useRouter();
   const editing = Boolean(initial);
   const [day, setDay] = useState(initial?.day ?? today());
-  const [text, setText] = useState(initial?.text ?? "");
+  const [text, setText] = useState(initial?.text ?? draft ?? "");
   const [title, setTitle] = useState(initial?.titleLocked ? initial.title : "");
   const [photos, setPhotos] = useState<PhotoItem[]>(
     () => initial?.photos.map((p) => ({ id: p.media.key, preview: p.media.url, status: "ready", media: p.media, analysis: p.analysis })) ?? [],
@@ -59,7 +59,7 @@ export function Composer({ config, initial }: { config: AppConfig; initial?: Ent
       feel: m.feel ?? { bpm: null, energy: 0.5, mode: "unknown" },
     };
   });
-  const [musicTab, setMusicTab] = useState<"file" | "link" | "ai">(initial?.music.kind ?? "file");
+  const [musicTab, setMusicTab] = useState<"file" | "link" | "ai">(initial?.music.kind ?? "ai");
   const [narration, setNarration] = useState<Narration | null>(initial?.narration ? { media: initial.narration, url: initial.narration.url } : null);
   const [phase, setPhase] = useState<{ step: string; progress: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +72,18 @@ export function Composer({ config, initial }: { config: AppConfig; initial?: Ent
   }, [text]);
 
   const mood = useMemo(() => countMood(text), [text]);
-  const blend = useMemo(() => blendThemes(mood, reading), [mood, reading]);
+  // The theme follows the words calmly: it waits for a pause in typing, then the
+  // colours ease over a few seconds (registered CSS properties in globals.css).
+  const [settled, setSettled] = useState(() => ({ mood, reading }));
+  useEffect(() => {
+    const t = setTimeout(() => setSettled({ mood, reading }), 1200);
+    return () => clearTimeout(t);
+  }, [mood, reading]);
+  const blend = useMemo(() => blendThemes(settled.mood, settled.reading), [settled]);
+  const themed = settled.mood.hits.length > 0;
+  const dayVars = (themed
+    ? { "--accent": blend.palette.accent, "--day-glow": blend.palette.glow, "--day-ground": blend.palette.ground }
+    : {}) as React.CSSProperties;
   useEffect(() => { setMascotContext(text); }, [text]);
   useEffect(() => () => setMascotContext(""), []);
 
@@ -291,7 +302,8 @@ export function Composer({ config, initial }: { config: AppConfig; initial?: Ent
   const prompt = useMemo(() => PROMPTS[Math.floor((day.charCodeAt(9) || 0) % PROMPTS.length)], [day]);
 
   return (
-    <div className={s.composer}>
+    <div className={s.composer} style={dayVars}>
+      <div className={s.dayAura} aria-hidden />
       <div className={s.main}>
         <section className={`glass ${s.block}`}>
           <header className={s.blockHead}>
@@ -366,11 +378,11 @@ export function Composer({ config, initial }: { config: AppConfig; initial?: Ent
             <h2>The song of the day</h2>
           </header>
           <div className="segmented" role="group" aria-label="Music source">
+            <button type="button" aria-pressed={musicTab === "ai"} onClick={() => setMusicTab("ai")}>✦ AI pick</button>
             <button type="button" aria-pressed={musicTab === "file"} onClick={() => setMusicTab("file")}>Audio file</button>
             <button type="button" aria-pressed={musicTab === "link"} onClick={() => { setMusicTab("link"); if (music?.kind !== "link" || music.reason) setMusic({ kind: "link", url: "", preview: null, status: "idle", feel: { bpm: null, energy: 0.5, mode: "unknown" } }); }}>
               Music link
             </button>
-            <button type="button" aria-pressed={musicTab === "ai"} onClick={() => setMusicTab("ai")}>✦ AI pick</button>
           </div>
 
           {musicTab === "ai" && (
@@ -458,8 +470,8 @@ export function Composer({ config, initial }: { config: AppConfig; initial?: Ent
       </div>
 
       <aside className={s.summary}>
-        <div className={`glass ${s.summaryInner}`} style={{ "--accent": blend.palette.accent } as React.CSSProperties}>
-          <MoodMeter mood={mood} blend={blend} />
+        <div className={`glass ${s.summaryInner}`}>
+          <MoodMeter mood={mood} blend={blend} themed={themed} />
           <hr className="rule" />
           <p className="meta">Your memory</p>
           <div className={s.progress} aria-label={`${doneCount} of 3 required steps done`}>

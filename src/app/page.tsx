@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Equalizer, Typewriter } from "@/components/Alive";
 import { Icon } from "@/components/Icon";
 import { MemoryCard } from "@/components/MemoryCard";
+import { Playground } from "@/components/Playground";
 import { Transform } from "@/components/Transform";
 import { repo } from "@/lib/server/db";
 import { currentOwnerOrNull } from "@/lib/server/owner";
@@ -28,28 +29,7 @@ export default async function Home() {
 
   return (
     <main>
-      <section className={`wrap ${s.hero}`}>
-        <div className={s.heroText}>
-          <h1 className={`display ${s.heroTitle}`}>
-            People remember how a day <em>felt.</em>
-          </h1>
-          <p className="lede">
-            Write what happened, add your photos and the song that stayed with you. Felt turns all three into a living memory with its own light, colour and rhythm.
-          </p>
-          <div className={s.ctas}>
-            <Link href="/new" className="btn btn-primary">Write today →</Link>
-            <Link href="/archive" className="btn">Browse the archive</Link>
-          </div>
-          <ul className={s.trust}>
-            <li>Private by default</li>
-            <li>No account needed</li>
-            <li>Phone, tablet & desktop</li>
-          </ul>
-        </div>
-        <div className={s.heroDemo}>
-          <Transform entries={demos.map((e) => ({ ...e, owner: "" }))} />
-        </div>
-      </section>
+      <Playground />
 
       {words.length > 0 && (
         <div className={s.marquee} aria-hidden>
@@ -58,6 +38,16 @@ export default async function Home() {
           </div>
         </div>
       )}
+
+      <section className={`wrap cv ${s.develop}`}>
+        <div className={s.sectionHead}>
+          <p className="meta section-label">watch a day develop</p>
+          <h2 className={`display ${s.h2}`}>words, photographs, a song — <em>one memory.</em></h2>
+        </div>
+        <div className={s.heroDemo}>
+          <Transform entries={demos.map((e) => ({ ...e, owner: "" }))} />
+        </div>
+      </section>
 
       <section className={`wrap cv ${s.how}`}>
         <div className={s.sectionHead}>

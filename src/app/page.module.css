@@ -69,3 +69,5 @@
   .when { display: none; }
   .principles { grid-template-columns: 1fr; }
 }
+
+.develop { padding-top: var(--s-9); display: grid; gap: var(--s-6); }

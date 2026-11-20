@@ -1,3 +1,8 @@
+/* Registered so the diary theme can ease between colours instead of jumping. */
+@property --accent { syntax: "<color>"; inherits: true; initial-value: #FFD83D; }
+@property --day-glow { syntax: "<color>"; inherits: true; initial-value: #FFD83D; }
+@property --day-ground { syntax: "<color>"; inherits: true; initial-value: #12131C; }
+
 :root {
   --ink-0: #12131C;
   --ink-1: #171826;

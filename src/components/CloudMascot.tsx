@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useAnimationControls } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { countMood } from "@/lib/analysis/mood";
+import { NimbusCloud } from "./NimbusCloud";
 import s from "./CloudMascot.module.css";
 
 // Cloud puffs around the chat panel walls: random sizes, seeded so they stay put.
@@ -151,7 +152,7 @@ export function CloudMascot() {
         body: JSON.stringify({ messages: next.slice(1).slice(-20), context: getContext()?.slice(0, 4000) || undefined }),
       });
       const json = await res.json();
-      setMsgs((m) => [...m, { role: "assistant", content: res.ok ? json.reply : "my thoughts got foggy — try again?" }]);
+      setMsgs((m) => [...m, { role: "assistant", content: res.ok ? json.reply : res.status === 429 && json.error ? json.error : "my thoughts got foggy — try again?" }]);
     } catch {
       setMsgs((m) => [...m, { role: "assistant", content: "my thoughts got foggy — try again?" }]);
     } finally {
@@ -161,6 +162,20 @@ export function CloudMascot() {
 
   return (
     <>
+      {/* soft glow along the screen edges while Nimbus is listening */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            key="aura"
+            className={s.aura}
+            aria-hidden
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+          />
+        )}
+      </AnimatePresence>
       <motion.div className={s.float} animate={open ? { x: 0, y: 0 } : controls}>
         <AnimatePresence>
           {bubble && !open && (
@@ -180,16 +195,7 @@ export function CloudMascot() {
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.92 }}
         >
-          <svg viewBox="0 0 120 80" aria-hidden>
-            <path d="M30 70 C12 70 6 56 12 46 C6 32 22 20 36 26 C40 10 66 6 74 22 C88 14 106 24 102 40 C116 46 112 70 94 70 Z" fill="#FFFFFF" stroke="#11110F" strokeWidth="3" />
-            <motion.g animate={{ scaleY: [1, 1, 0.1, 1] }} transition={{ duration: 5, repeat: Infinity, times: [0, 0.92, 0.95, 1] }} style={{ originY: "46px" }}>
-              <rect x="44" y="40" width="6" height="10" rx="2" fill="#11110F" />
-              <rect x="70" y="40" width="6" height="10" rx="2" fill="#11110F" />
-            </motion.g>
-            <path d="M54 56 Q60 61 66 56" fill="none" stroke="#11110F" strokeWidth="3" strokeLinecap="round" />
-            <rect x="36" y="52" width="8" height="5" rx="2.5" fill="#FFD83D" />
-            <rect x="76" y="52" width="8" height="5" rx="2.5" fill="#FFD83D" />
-          </svg>
+          <NimbusCloud width={92} />
         </motion.button>
       </motion.div>
 
@@ -215,14 +221,7 @@ export function CloudMascot() {
             </div>
             <section className={s.panel} role="dialog" aria-label="Chat with Nimbus">
               <header className={s.head}>
-                <svg className={s.avatar} viewBox="0 0 120 80" aria-hidden>
-                  <path d="M30 70 C12 70 6 56 12 46 C6 32 22 20 36 26 C40 10 66 6 74 22 C88 14 106 24 102 40 C116 46 112 70 94 70 Z" fill="#fff" stroke="#11110F" strokeWidth="4" />
-                  <rect x="44" y="40" width="7" height="11" rx="2" fill="#11110F" />
-                  <rect x="69" y="40" width="7" height="11" rx="2" fill="#11110F" />
-                  <path d="M54 57 Q60 62 66 57" fill="none" stroke="#11110F" strokeWidth="4" strokeLinecap="round" />
-                  <rect x="34" y="52" width="9" height="5" rx="2.5" fill="#FFD83D" />
-                  <rect x="77" y="52" width="9" height="5" rx="2.5" fill="#FFD83D" />
-                </svg>
+                <span className={s.avatar}><NimbusCloud width={46} shadow={false} /></span>
                 <div className={s.title}>
                   <p>nimbus</p>
                   <span><i />{context ? "listening · reads what you write" : "floating nearby"}</span>
