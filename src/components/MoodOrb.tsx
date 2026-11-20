@@ -81,7 +81,7 @@ export function MoodOrb({ mood, color, size = 104 }: { mood: MoodCount; color: s
       <motion.g
         animate={{ scaleY: [1, 1, 0.08, 1] }}
         transition={{ duration: 4.6, repeat: Infinity, times: [0, 0.93, 0.96, 1], ease: "easeInOut" }}
-        style={{ originX: "60px", originY: "58px" }}
+        style={{ originX: 0.5, originY: 0.5, transformBox: "fill-box" }}
       >
         <motion.rect x="45" width="8" rx="4" fill={ink} animate={{ y: 58 - eyeH / 2, height: eyeH }} transition={{ type: "spring", stiffness: 180, damping: 16 }} />
         <motion.rect x="67" width="8" rx="4" fill={ink} animate={{ y: 58 - eyeH / 2, height: eyeH }} transition={{ type: "spring", stiffness: 180, damping: 16 }} />

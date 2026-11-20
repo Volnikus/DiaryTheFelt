@@ -35,7 +35,10 @@
 
   --font-sans: "Inter Tight", "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Helvetica Neue", Arial, sans-serif;
   --font-display: "Inter Tight", "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+  --font-serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  --font-expressive: "Bricolage Grotesque", "Inter Tight", system-ui, sans-serif;
 
   --t-hero: clamp(3rem, 8.4vw, 7.6rem);
   --t-1: clamp(2.3rem, 5vw, 4.4rem);
@@ -243,3 +246,17 @@ article + .site-footer { margin-top: 0; }
 :focus-visible { outline-color: var(--accent); border-radius: 2px; }
 .section-label { display: inline-flex; align-items: center; gap: 8px; text-transform: lowercase; }
 .section-label::before { content: ""; width: 0.7em; height: 0.7em; background: var(--accent); border-radius: 2px; }
+
+/* Writing that changes typeface with the context: a soft fade each time the face switches.
+   Each face has its own keyframes name so the animation restarts on every switch. */
+[data-face] { transition: font-size 0.6s ease; }
+[data-face="grotesk"] { animation: face-grotesk 0.7s ease; }
+[data-face="serif"] { animation: face-serif 0.7s ease; }
+[data-face="mono"] { animation: face-mono 0.7s ease; }
+[data-face="hand"] { animation: face-hand 0.7s ease; }
+[data-face="expressive"] { animation: face-expressive 0.7s ease; }
+@keyframes face-grotesk { from { opacity: 0.35; filter: blur(3px); } }
+@keyframes face-serif { from { opacity: 0.35; filter: blur(3px); } }
+@keyframes face-mono { from { opacity: 0.35; filter: blur(3px); } }
+@keyframes face-hand { from { opacity: 0.35; filter: blur(3px); } }
+@keyframes face-expressive { from { opacity: 0.35; filter: blur(3px); } }

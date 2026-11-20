@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import s from "./SiteHeader.module.css";
 
@@ -18,13 +18,21 @@ export function SiteHeader() {
   const [indicator, setIndicator] = useState<{ x: number; w: number } | null>(null);
   const activeIndex = LINKS.findIndex((l) => (l.href === "/" ? path === "/" : path.startsWith(l.href)));
 
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   useLayoutEffect(() => {
     const el = links.current?.children[activeIndex] as HTMLElement | undefined;
     setIndicator(el ? { x: el.offsetLeft, w: el.offsetWidth } : null);
   }, [activeIndex]);
 
   return (
-    <header className={`${s.header} ${onMemory ? s.overlay : ""}`}>
+    <header className={`${s.header} ${onMemory ? s.overlay : ""} ${scrolled || onMemory ? s.solid : ""}`}>
       <nav className={s.pill} aria-label="Main">
         <Link href="/" className={s.brand} aria-label="Felt — home">
           <Logo size={30} />

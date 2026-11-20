@@ -59,7 +59,7 @@ export function NimbusCloud({ width = 96, blink = true, shadow = true }: { width
       <motion.g
         animate={blink ? { scaleY: [1, 1, 0.1, 1] } : undefined}
         transition={blink ? { duration: 5.2, repeat: Infinity, times: [0, 0.92, 0.95, 1] } : undefined}
-        style={{ originX: "69px", originY: "62px" }}
+        style={{ originX: 0.5, originY: 0.5, transformBox: "fill-box" }}
       >
         <ellipse cx="58" cy="62" rx="3.6" ry="5" fill={face} />
         <ellipse cx="80" cy="62" rx="3.6" ry="5" fill={face} />

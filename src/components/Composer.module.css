@@ -149,3 +149,7 @@
     radial-gradient(50% 45% at 0% 100%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 70%),
     linear-gradient(180deg, color-mix(in oklab, var(--day-ground) 6%, transparent), transparent 40%);
 }
+
+.faceTag { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--paper-2); width: 100%; }
+.faceTag i { font-style: normal; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 6px; background: color-mix(in oklab, var(--accent) 18%, transparent); color: var(--paper); font-size: 1rem; }
+.faceTag em { font-style: normal; color: var(--paper-dim); }

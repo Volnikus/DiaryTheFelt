@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { countMood, type MoodCount } from "@/lib/analysis/mood";
 import { analyzeTextLocally } from "@/lib/analysis/text";
 import { blendThemes } from "@/lib/engine/presets";
+import { faceFor } from "@/lib/engine/typeface";
 import { MoodOrb } from "./MoodOrb";
 import s from "./Playground.module.css";
 
@@ -45,7 +46,9 @@ export function Playground() {
     const t = setTimeout(() => setSettled(countMood(live)), 600);
     return () => clearTimeout(t);
   }, [live]);
-  const blend = useMemo(() => blendThemes(settled, live.trim().length > 20 ? analyzeTextLocally(live) : null), [settled, live]);
+  const analysis = useMemo(() => (live.trim().length > 20 ? analyzeTextLocally(live) : null), [live]);
+  const blend = useMemo(() => blendThemes(settled, analysis), [settled, analysis]);
+  const face = useMemo(() => faceFor(settled, analysis), [settled, analysis]);
   const themed = settled.hits.length > 0;
   const color = themed ? blend.palette.accent : "#FFD83D";
   const vars = { "--accent": color, "--day-glow": themed ? blend.palette.glow : "#FFD83D" } as React.CSSProperties;
@@ -66,6 +69,8 @@ export function Playground() {
             <textarea
               ref={area}
               rows={2}
+              data-face={face.key}
+              style={{ fontFamily: face.family, fontSize: `calc(clamp(1.3rem, 2.4vw, 2rem) * ${face.scale})`, fontWeight: face.weight }}
               maxLength={400}
               value={touched ? text : ""}
               placeholder={touched ? "what happened today, and how did it feel?" : `${demo}▍`}
@@ -93,6 +98,7 @@ export function Playground() {
           <div className={s.readout}>
             <span>{mood.positive} good · {mood.negative} hard</span>
             <span>{themed ? blend.name.toLowerCase() : "no theme yet"}</span>
+            <span>{face.label}</span>
           </div>
         </div>
       </div>

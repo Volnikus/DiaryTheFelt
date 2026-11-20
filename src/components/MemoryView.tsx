@@ -398,8 +398,8 @@ function MusicBlock({ entry, audio }: { entry: Entry; audio: Audio }) {
           {prof.mode !== "unknown" && <span>{prof.mode}</span>}
           {prof.genre && <span>{prof.genre}</span>}
         </p>
-        <a href={m.url} target="_blank" rel="noreferrer" className="btn btn-small" style={{ borderColor: "var(--m-muted)" }}>
-          Open in {PROVIDER_LABEL[m.provider]} ↗
+        <a href={m.url} target="_blank" rel="noreferrer" className="btn btn-small">
+          {m.provider === "other" ? "Listen" : `Open in ${PROVIDER_LABEL[m.provider]}`} ↗
         </a>
       </div>
     </div>

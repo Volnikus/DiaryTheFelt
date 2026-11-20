@@ -9,6 +9,7 @@ import { analyzeAudioFile, preparePhoto, uploadMedia, type AppConfig } from "@/l
 import { PROVIDER_LABEL } from "@/lib/music-link";
 import { countMood } from "@/lib/analysis/mood";
 import { blendThemes } from "@/lib/engine/presets";
+import { faceFor } from "@/lib/engine/typeface";
 import { setMascotContext } from "./CloudMascot";
 import { Icon } from "./Icon";
 import { MoodMeter } from "./MoodMeter";
@@ -81,6 +82,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
   }, [mood, reading]);
   const blend = useMemo(() => blendThemes(settled.mood, settled.reading), [settled]);
   const themed = settled.mood.hits.length > 0;
+  const face = useMemo(() => faceFor(settled.mood, settled.reading), [settled]);
   const dayVars = (themed
     ? { "--accent": blend.palette.accent, "--day-glow": blend.palette.glow, "--day-ground": blend.palette.ground }
     : {}) as React.CSSProperties;
@@ -316,6 +318,8 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
           </div>
           <textarea
             className={s.textarea}
+            data-face={face.key}
+            style={{ fontFamily: face.family, fontSize: `calc(clamp(1.05rem, 1.4vw, 1.18rem) * ${face.scale})`, fontWeight: face.weight }}
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={`Write about today. ${prompt}`}
@@ -323,6 +327,10 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
             maxLength={8000}
           />
           <div className={s.readingRow}>
+            <span className={s.faceTag} title={face.reason}>
+              <i style={{ fontFamily: face.family }}>Aa</i>
+              <span>{face.label}<em> · {face.reason}</em></span>
+            </span>
             <span className="meta">{words} words</span>
             {reading ? (
               <span className={s.reading} aria-live="polite">

@@ -35,10 +35,10 @@ export function designVars(d: MemoryDesign): CSSProperties {
 export function titleStyle(d: MemoryDesign, size?: string): CSSProperties {
   const t = d.type;
   return {
-    fontFamily: t.family === "mono" ? "var(--font-mono)" : "var(--font-display)",
-    fontStyle: "normal",
-    fontWeight: t.family === "serif" ? 250 : t.family === "mono" ? 500 : t.weight,
-    letterSpacing: t.family === "serif" ? "-0.035em" : t.family === "grotesk" ? "-0.045em" : `${t.tracking}em`,
+    fontFamily: t.family === "mono" ? "var(--font-mono)" : t.family === "serif" ? "var(--font-serif)" : "var(--font-display)",
+    fontStyle: t.family === "serif" && t.italic ? "italic" : "normal",
+    fontWeight: t.family === "serif" ? 300 : t.family === "mono" ? 500 : t.weight,
+    letterSpacing: t.family === "serif" ? "-0.025em" : t.family === "grotesk" ? "-0.045em" : `${t.tracking}em`,
     textTransform: t.uppercase ? "uppercase" : "none",
     lineHeight: t.family === "serif" ? 0.98 : t.family === "mono" ? 1.02 : 0.9,
     fontSize: size,

@@ -234,3 +234,9 @@
   .bigPlay { width: 52px; height: 52px; }
   .renameForm { flex-direction: column; }
 }
+
+/* Buttons take the memory's own ink, so they read on light and dark days alike. */
+.memory :global(.btn) { color: var(--m-ink); background: color-mix(in srgb, var(--m-ink) 6%, transparent); border-color: color-mix(in srgb, var(--m-ink) 28%, transparent); }
+.memory :global(.btn:hover) { background: color-mix(in srgb, var(--m-ink) 12%, transparent); border-color: color-mix(in srgb, var(--m-ink) 45%, transparent); }
+.memory :global(.btn-light) { background: var(--m-ink); color: var(--m-ground); border-color: var(--m-ink); }
+.memory :global(.btn-danger) { color: #C2334A; border-color: rgba(194, 51, 74, 0.45); }

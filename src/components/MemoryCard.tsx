@@ -33,7 +33,7 @@ export function MemoryCard({ entry, priority = false }: { entry: EntrySummary; p
         <h3
           className={s.title}
           style={{
-            fontFamily: t.family === "mono" ? "var(--font-mono)" : "var(--font-display)",
+            fontFamily: t.family === "mono" ? "var(--font-mono)" : t.family === "serif" ? "var(--font-serif)" : "var(--font-display)",
             fontWeight: t.family === "serif" ? 300 : t.family === "mono" ? 500 : t.weight,
             textTransform: t.uppercase ? "uppercase" : "none",
             letterSpacing: t.family === "mono" ? `${t.tracking}em` : "-0.035em",
