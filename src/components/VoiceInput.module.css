@@ -1,13 +1,13 @@
 .voice { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
-.mic { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 2.5px; border: 1px solid var(--line); background: transparent; color: var(--paper-2); font: inherit; font-size: 0.84rem; cursor: pointer; }
+.mic { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--r-1); border: 1px solid var(--line-strong); background: var(--sheet); color: var(--paper-2); font: inherit; font-size: 0.84rem; cursor: pointer; }
 .mic:hover { border-color: var(--line-strong); color: var(--paper); }
 .mic[data-on] { border-color: var(--danger); color: var(--paper); }
-.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--paper-faint); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--paper-faint); }
 .mic[data-on] .dot { background: var(--danger); animation: pulse 1.2s ease-in-out infinite; }
 @keyframes pulse { 50% { transform: scale(1.5); opacity: 0.5; } }
 .langs { display: inline-flex; gap: 2px; }
-.langs button { padding: 4px 7px; border: 0; border-radius: 2px; background: transparent; color: var(--paper-faint); font-family: var(--font-ui); font-size: 0.7rem; cursor: pointer; }
-.langs button[aria-pressed="true"] { color: var(--paper); background: rgba(22, 22, 22, 0.08); }
+.langs button { padding: 4px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--paper-dim); font-family: var(--font-ui); font-size: 0.75rem; cursor: pointer; }
+.langs button[aria-pressed="true"] { color: var(--paper); background: var(--ink-1); }
 .interim { flex-basis: 100%; margin: 0; font-size: 0.88rem; color: var(--paper-dim); }
 .err { flex-basis: 100%; margin: 0; font-size: 0.82rem; color: var(--danger); }
 @media (prefers-reduced-motion: reduce) { .mic[data-on] .dot { animation: none; } }

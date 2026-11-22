@@ -1,0 +1,21 @@
+.under { position: relative; display: inline-block; white-space: nowrap; }
+.under svg { position: absolute; left: -2%; right: -2%; width: 104%; bottom: -0.18em; height: 0.32em; overflow: visible; filter: url(#felt-rough); }
+.under path { fill: none; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 260; stroke-dashoffset: 260; animation: draw 900ms var(--ease-out) forwards; animation-delay: var(--delay, 0ms); }
+.under .second { stroke-width: 2; opacity: 0.6; animation-delay: calc(var(--delay, 0ms) + 260ms); }
+
+.circled { position: relative; display: inline-grid; place-items: center; min-width: 1.3em; height: 1.3em; line-height: 1; }
+.circled svg { position: absolute; inset: -14% -16%; width: 132%; height: 128%; overflow: visible; pointer-events: none; filter: url(#felt-rough); }
+.circled path { fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 330; stroke-dashoffset: 330; animation: draw 1100ms var(--ease-out) 300ms forwards; }
+
+.arrow { width: 84px; height: auto; overflow: visible; filter: url(#felt-rough); }
+.arrow path { fill: none; stroke: var(--pen); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 200; stroke-dashoffset: 200; animation: draw 900ms var(--ease-out) 500ms forwards; }
+
+.wash { position: absolute; pointer-events: none; mix-blend-mode: multiply; overflow: visible; }
+
+.doodle { width: 34px; height: 34px; overflow: visible; filter: url(#felt-rough); }
+.doodle path { fill: none; stroke: var(--pen); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .under path, .circled path, .arrow path { stroke-dashoffset: 0; animation: none; }
+}

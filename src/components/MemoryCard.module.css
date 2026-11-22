@@ -7,7 +7,7 @@
   border-radius: 12px;
   overflow: hidden;
   isolation: isolate;
-  transition: transform 600ms var(--ease-spring), box-shadow var(--d-mid) var(--ease-out);
+  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 6px 16px -8px rgba(0, 0, 0, 0.2);
 }
 .card::after { display: none; }
@@ -28,7 +28,7 @@
 .foot svg { flex: 1; }
 .meta { font-size: 0.78rem; font-weight: 500; color: var(--c-muted); white-space: nowrap; }
 .demo { font-size: 0.72rem; font-weight: 500; padding: 2px 9px; border-radius: 4px; border: 1px solid var(--c-accent); color: var(--c-accent); }
-.title { margin: 0; font-size: clamp(1.29rem, 1.98vw, 1.72rem); line-height: 0.98; overflow-wrap: anywhere; text-transform: lowercase; letter-spacing: -0.05em; }
+.title { margin: 0; font-size: clamp(1.29rem, 1.98vw, 1.72rem); line-height: 1.02; overflow-wrap: anywhere; }
 .atmos { margin: 0; font-size: 0.92rem; color: var(--c-muted); }
 
 .film .plate { border-radius: 6px; margin: 12px 12px 0; border: 6px solid #111; border-left-width: 14px; border-right-width: 14px; aspect-ratio: 4 / 3; }

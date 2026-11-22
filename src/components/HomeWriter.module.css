@@ -1,0 +1,27 @@
+/* The writing surface is graph paper (the world); the colour lives only in Mote (the moment). */
+.writer { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: center; }
+
+.page { padding: 24px 24px 20px calc(var(--cell) * 2 + 16px); border-radius: var(--r-1); box-shadow: var(--shadow-1); }
+.field textarea {
+  display: block; width: 100%; resize: none; border: 0; background: transparent; padding: 0;
+  line-height: calc(var(--cell) * 2); min-height: calc(var(--cell) * 6);
+  color: var(--pen); letter-spacing: 0;
+}
+.field textarea:focus { outline: none; }
+.field textarea::placeholder { color: rgba(35, 70, 184, 0.6); }
+
+.foot { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 12px; }
+.tries { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font-size: 0.88rem; color: var(--paper-dim); }
+.tries button { font-size: 0.88rem; color: var(--pen); text-decoration: underline; text-decoration-color: rgba(35, 70, 184, 0.35); text-underline-offset: 3px; transition: text-decoration-color 160ms var(--ease-out); }
+.tries button:hover { text-decoration-color: var(--pen); }
+
+.mote { display: grid; justify-items: center; gap: 4px; width: 168px; }
+.mote :global(.hand) { margin: 4px 0 0; font-size: 1.5rem; text-align: center; }
+.counts { margin: 0; font-size: 0.8rem; color: var(--paper-dim); text-align: center; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 760px) {
+  .writer { grid-template-columns: 1fr; }
+  .mote { order: -1; width: auto; grid-template-columns: auto 1fr; justify-items: start; align-items: center; column-gap: 12px; }
+  .mote svg { width: 88px; height: 88px; grid-row: span 2; }
+  .mote :global(.hand), .counts { text-align: left; }
+}

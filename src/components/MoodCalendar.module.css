@@ -11,5 +11,5 @@
 .grid > * { aspect-ratio: 1; border-radius: 2px; }
 .empty { background: rgba(22, 22, 22, 0.05); }
 .empty[data-today] { outline: 1px solid var(--accent); outline-offset: 1px; }
-.day { display: block; transition: transform var(--d-fast) var(--ease-out), box-shadow var(--d-fast); }
-.day:hover, .day:focus-visible { transform: scale(1.35); box-shadow: 0 0 12px currentColor; z-index: 1; position: relative; }
+.day { display: block; transition: box-shadow 160ms var(--ease-out); }
+.day:hover, .day:focus-visible { box-shadow: 0 0 0 2px var(--sheet), 0 0 0 3px var(--paper); z-index: 1; position: relative; }

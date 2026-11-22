@@ -1,13 +1,13 @@
-.controls { display: flex; flex-wrap: wrap; align-items: end; gap: var(--s-3); padding: var(--s-4); margin-bottom: var(--s-7); position: sticky; top: 84px; z-index: 10; border-radius: 4px; background: var(--glass-strong); border-top: 0; }
+.controls { display: flex; flex-wrap: wrap; align-items: end; gap: var(--s-3); padding: 16px; margin-bottom: 48px; position: sticky; top: 76px; z-index: 10; border-radius: var(--r-3); background: var(--sheet); box-shadow: var(--shadow-1); border-top: 0; }
 .search { flex: 1 1 280px; }
 .dates { display: flex; gap: var(--s-2); }
 .dates label { display: grid; gap: 4px; }
 .dates input { width: 158px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: clamp(14px, 1.8vw, 22px); }
-.cardIn { animation: cardIn 700ms var(--ease-out) both; }
-@keyframes cardIn { from { opacity: 0; transform: translateY(24px) scale(0.97); } }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 24px; }
+.cardIn { animation: cardIn 400ms var(--ease-out) both; }
+@keyframes cardIn { from { opacity: 0; transform: translateY(8px); } }
 .month { margin-bottom: var(--s-8); display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: var(--s-5); align-items: start; }
-.monthTitle { display: flex; flex-direction: column; gap: 2px; margin: 0; font-family: var(--font-ui); font-weight: 400; font-size: var(--t-2); letter-spacing: -0.02em; text-transform: capitalize; padding-top: var(--s-3); border-top: 1px solid var(--line); position: sticky; top: 180px; }
+.monthTitle { display: flex; flex-direction: column; gap: 2px; margin: 0; font-family: var(--font-display); font-variation-settings: "SOFT" 60, "WONK" 1; font-weight: 500; font-size: var(--t-2); letter-spacing: -0.015em; text-transform: capitalize; padding-top: 12px; border-top: 1px solid var(--line); position: sticky; top: 180px; }
 .monthTitle span { font-size: 0.86rem; font-weight: 400; letter-spacing: 0; color: var(--paper-dim); }
 .ghost { aspect-ratio: 3 / 4.2; }
 .dim { opacity: 0.55; transition: opacity var(--d-fast); }

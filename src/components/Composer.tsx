@@ -16,6 +16,7 @@ import { setMascotContext } from "@/lib/client/mascot-context";
 import { SongSearch } from "./SongSearch";
 import { VoiceInput } from "./VoiceInput";
 import { Icon } from "./Icon";
+import { Circled } from "./Sketch";
 import { MoodMeter } from "./MoodMeter";
 import { Waveform } from "./Waveform";
 import s from "./Composer.module.css";
@@ -315,17 +316,17 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
 
   return (
     <div className={s.composer} style={dayVars}>
-      <div className={s.dayAura} aria-hidden />
       <div className={s.main}>
         <section className={`glass ${s.block}`}>
           <header className={s.blockHead}>
-            <span className={s.num}><Icon name="pen" size={18} /></span>
+            <span className={s.num}><Circled>1</Circled></span>
             <h2>The day, in your words</h2>
           </header>
           <div className={s.dateRow}>
             <label className="meta" htmlFor="day">Date</label>
             <input id="day" type="date" className="input" value={day} max={today()} onChange={(e) => setDay(e.target.value)} />
           </div>
+          <div className={`grid-paper ${s.paper}`}>
           <textarea
             className={s.textarea}
             data-face={face.key}
@@ -336,6 +337,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
             aria-label="What happened today, and how did it feel?"
             maxLength={8000}
           />
+          </div>
           <VoiceInput onText={(said) => setText((t) => (t.trim() ? `${t.trimEnd()} ${said}` : said).slice(0, 8000))} />
           <div className={s.readingRow}>
             <span className={s.faceTag} title={face.reason}>
@@ -360,7 +362,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
 
         <section className={`glass ${s.block}`}>
           <header className={s.blockHead}>
-            <span className={s.num}><Icon name="image" size={18} /></span>
+            <span className={s.num}><Circled>2</Circled></span>
             <h2>Photographs</h2>
             <span className="meta">{photos.length}/12 · first one leads</span>
           </header>
@@ -393,11 +395,11 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
 
         <section id="song-of-the-day" className={`glass ${s.block}`}>
           <header className={s.blockHead}>
-            <span className={s.num}><Icon name="music" size={18} /></span>
+            <span className={s.num}><Circled>3</Circled></span>
             <h2>The song of the day</h2>
           </header>
           <div className="segmented" role="group" aria-label="Music source">
-            <button type="button" aria-pressed={musicTab === "ai"} onClick={() => setMusicTab("ai")}>✦ Pick for me</button>
+            <button type="button" aria-pressed={musicTab === "ai"} onClick={() => setMusicTab("ai")}>Pick for me</button>
             <button type="button" aria-pressed={musicTab === "spotify"} onClick={() => setMusicTab("spotify")}>Search songs</button>
             <button type="button" aria-pressed={musicTab === "file"} onClick={() => setMusicTab("file")}>Audio file</button>
             <button type="button" aria-pressed={musicTab === "link"} onClick={() => { setMusicTab("link"); if (music?.kind !== "link" || music.reason || music.trackId) setMusic({ kind: "link", url: "", preview: null, status: "idle", feel: { bpm: null, energy: 0.5, mode: "unknown" } }); }}>
@@ -488,7 +490,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
 
         <section className={`glass ${s.block}`}>
           <header className={s.blockHead}>
-            <span className={s.num}><Icon name="mic" size={18} /></span>
+            <span className={s.num}><Circled>4</Circled></span>
             <h2>A voice note <em>(optional)</em></h2>
           </header>
           <Recorder value={narration} onChange={setNarration} />
@@ -521,7 +523,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
           <label className={s.titleField}>
             <span className={s.titleHead}>
               <span className="meta">Title</span>
-              <button type="button" className={s.suggest} onClick={suggestTitle} disabled={naming}>{naming ? "naming…" : "✦ suggest"}</button>
+              <button type="button" className={s.suggest} onClick={suggestTitle} disabled={naming}>{naming ? "Naming…" : "Suggest"}</button>
             </span>
             <input className="input" value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} placeholder={editing && initial ? initial.title : aiReady ? "Leave empty — AI will name it for you" : "Leave empty — Felt names it from your words"} />
           </label>
@@ -532,7 +534,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
           {error && <p className="notice error" role="alert">{error}</p>}
 
           <button type="button" className={`btn btn-primary ${s.develop} ${canDevelop ? s.ready : ""}`} onClick={develop} disabled={Boolean(phase) || busyPhotos}>
-            {editing ? "Redevelop memory" : canDevelop ? "Develop memory ✦" : `Develop memory · ${3 - doneCount} step${3 - doneCount === 1 ? "" : "s"} left`}
+            {editing ? "Redevelop memory" : canDevelop ? "Develop memory" : `Develop memory · ${3 - doneCount} step${3 - doneCount === 1 ? "" : "s"} left`}
           </button>
           <p className={s.fine}>Your diary is private to this browser’s diary key.</p>
         </div>

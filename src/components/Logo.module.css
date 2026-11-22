@@ -1,1 +1,1 @@
-.logo { display: block; flex: none; }
+.logo { display: block; flex: none; overflow: visible; transition: transform 400ms var(--ease-spring); }

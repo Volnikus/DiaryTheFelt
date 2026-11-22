@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import type { MoodCount } from "@/lib/analysis/mood";
 import type { ThemeBlend } from "@/lib/engine/presets";
+import { MoodDoodle } from "./MoodDoodle";
 import s from "./MoodMeter.module.css";
 
 const LABEL: Record<MoodCount["mood"], string> = {
@@ -17,23 +18,24 @@ export function MoodMeter({ mood, blend, themed }: { mood: MoodCount; blend: The
   return (
     <div className={s.meter} aria-live="polite">
       <div className={s.head}>
+        <MoodDoodle mood={mood} color={themed ? blend.palette.accent : "#9DBBF5"} size={96} />
         <div className={s.read}>
           <span className={s.kicker}>today feels</span>
           <AnimatePresence mode="wait" initial={false}>
             <motion.strong
               key={mood.mood}
               className={s.word}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
               {LABEL[mood.mood]}
             </motion.strong>
           </AnimatePresence>
           <div className={s.balance} aria-label={`balance ${Math.round(mood.balance * 100)}`}>
             <div className={s.track}>
-              <motion.i animate={{ left: `${50 + mood.balance * 50}%` }} transition={{ type: "spring", stiffness: 90, damping: 18 }} />
+              <motion.i animate={{ left: `${50 + mood.balance * 50}%` }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} />
             </div>
             <div className={s.ends}><span>hard</span><span>good</span></div>
           </div>
@@ -77,7 +79,7 @@ export function MoodMeter({ mood, blend, themed }: { mood: MoodCount; blend: The
           {themed ? (
             blend.parts.map((p) => (
               <span key={p.preset.id} className={s.swatch}>
-                <i style={{ background: `radial-gradient(circle at 35% 30%, ${p.preset.glow}, ${p.preset.accent} 70%)` }} />
+                <i style={{ background: p.preset.accent }} />
                 {p.preset.name.toLowerCase()} <b>{Math.round(p.weight * 100)}%</b>
               </span>
             ))

@@ -1,12 +1,11 @@
 import s from "./Logo.module.css";
 
-/** Felt mark: a dark rounded square with a lowercase "f" and a small green dot (a day, kept). */
-export function Logo({ size = 28 }: { size?: number }) {
+/** Felt mark: a page from the notebook with a pen "f", in one ink. */
+export function Logo({ size = 30 }: { size?: number }) {
   return (
     <svg className={s.logo} width={size} height={size} viewBox="0 0 64 64" aria-hidden>
-      <rect width="64" height="64" rx="15" fill="#161616" />
-      <path d="M36.5 14.5c-6.6 0-10.4 3.7-10.4 10.4V29h-5.6v7.2h5.6V51h8.4V36.2h7.3V29h-7.3v-3.4c0-2.6 1.2-3.8 3.6-3.8 1.3 0 2.6.2 3.8.6l1.3-7c-2-.6-4.3-.9-6.7-.9Z" fill="#fff" />
-      <circle cx="47" cy="47" r="4.5" fill="#3FB58F" />
+      <path d="M12 8 C 25 6, 41 7, 53 9 C 55 24, 55 42, 53 56 C 39 58, 25 58, 11 56 C 9 40, 9 24, 12 8 Z" fill="none" stroke="#2346B8" strokeWidth="3.2" strokeLinejoin="round" filter="url(#felt-rough)" />
+      <path d="M40 18 C 33 15, 28 20, 29 28 L 30 47 M 23 30 C 29 29, 34 29, 39 30" fill="none" stroke="#2346B8" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

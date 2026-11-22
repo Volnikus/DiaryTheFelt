@@ -1,39 +1,28 @@
-/* Full-width bar: transparent over the top of the page, a soft frosted strip once you scroll
-   (and always on memory pages, which can be light or dark). Content aligns to the page grid. */
-.header {
-  position: sticky; top: 0; z-index: 60;
-  border-bottom: 1px solid transparent;
-  transition: background-color 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease;
-}
+/* The top of the page: plain paper, no bar. Once you scroll, a strip of the same paper
+   follows you with a dashed edge, like a page folded over. */
+.header { position: sticky; top: 0; z-index: 60; border-bottom: 1px solid transparent; transition: background-color 0.3s ease, border-color 0.3s ease; }
 .overlay { position: fixed; left: 0; right: 0; }
-.solid {
-  background: rgba(250, 250, 248, 0.92); -webkit-backdrop-filter: saturate(160%) blur(10px); backdrop-filter: saturate(160%) blur(10px);
-  border-bottom-color: var(--line);
-}
-.pill {
-  max-width: var(--max); margin: 0 auto; height: 64px; padding: 0 var(--gutter);
-  display: flex; align-items: center; gap: 8px;
-  
-}
-@keyframes drop { from { opacity: 0; transform: translateY(-10px); } }
+.solid { background: var(--ink-0); border-bottom-color: var(--line); }
+.pill { max-width: var(--max); margin: 0 auto; height: 64px; padding: 0 var(--gutter); display: flex; align-items: center; gap: 8px; }
 
 .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; color: var(--paper); }
-
-
-.brand b { font-weight: 700; font-size: 1.2rem; letter-spacing: -0.03em; line-height: 1; }
+.brand b { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 72; font-weight: 500; font-size: 1.4rem; letter-spacing: -0.02em; line-height: 1; }
 
 .links { position: relative; display: flex; align-items: center; height: 100%; }
-.link { position: relative; display: flex; align-items: center; height: 100%; padding: 0 14px; font-size: 0.92rem; font-weight: 500; color: var(--paper-dim); transition: color var(--d-fast); }
+.link { position: relative; display: flex; align-items: center; height: 100%; padding: 0 12px; font-size: 0.95rem; font-weight: 500; color: var(--paper-dim); transition: color var(--d-fast); }
 .link:hover, .link[aria-current="page"] { color: var(--paper); }
-.link[aria-current="page"] span { font-weight: 600; }
-.link span { position: relative; z-index: 1; }
-.active { display: none; }
+.active { position: absolute; left: 0; bottom: 16px; height: 8px; overflow: visible; pointer-events: none; transition: transform 320ms var(--ease-out), width 320ms var(--ease-out), opacity 160ms var(--ease-out); filter: url(#felt-rough); }
+.active path { fill: none; stroke: var(--pen); stroke-width: 2.6; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 
-.cta { margin-left: 10px; }
-.plus { display: none; }
+.cta { margin-left: 12px; }
+.plus { font-size: 1.15em; line-height: 1; margin-top: -2px; }
 
-@media (max-width: 520px) {
-  .pill { height: 56px; }
-  .link { padding: 0 10px; }
+/* memory pages paint their own world; the header steps back */
+.overlay.solid { background: rgba(255, 254, 250, 0.94); }
+
+@media (max-width: 560px) {
+  .pill { height: 58px; gap: 4px; }
+  .link { padding: 0 9px; }
   .links a:first-child { display: none; }
+  .brand b { font-size: 1.45rem; }
 }

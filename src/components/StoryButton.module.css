@@ -1,10 +1,10 @@
 .wrap { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .btn {
-  display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 15px; border: 0; border-radius: 2.5px;
-  background: linear-gradient(45deg, #f9ce34, #ee2a7b 55%, #6228d7); color: #fff; font: inherit; font-size: 0.86rem; font-weight: 600;
-  letter-spacing: -0.02em; cursor: pointer; transition: filter var(--d-fast), transform var(--d-fast);
+  display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 16px; border: 1px solid var(--line-strong); border-radius: var(--r-1);
+  background: var(--sheet); color: var(--paper); font: inherit; font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; transition: background-color 160ms var(--ease-out), transform 120ms var(--ease-out);
 }
-.btn:hover { filter: brightness(1.08); }
+.btn:hover { background: var(--ink-1); }
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.6; cursor: progress; }
 .hint { font-size: 0.8rem; color: var(--paper-dim); max-width: 36ch; }

@@ -37,7 +37,7 @@ export function SiteHeader() {
       <nav className={s.pill} aria-label="Main">
         <Link href="/" className={s.brand} aria-label="Felt — home">
           <Logo size={30} />
-          <b>Felt</b>
+          <b>felt</b>
         </Link>
         <div className={s.links} ref={links}>
           {LINKS.map((l, i) => (
@@ -45,10 +45,12 @@ export function SiteHeader() {
               <span>{l.label}</span>
             </Link>
           ))}
-          <span className={s.active} style={indicator ? { transform: `translateX(${indicator.x}px)`, width: indicator.w, opacity: 1 } : { opacity: 0 }} aria-hidden />
+          <svg className={s.active} viewBox="0 0 100 10" preserveAspectRatio="none" style={indicator ? { transform: `translateX(${indicator.x}px)`, width: indicator.w, opacity: 1 } : { opacity: 0 }} aria-hidden>
+            <path d="M4 6 C 25 2, 50 9, 72 5 S 92 4, 97 6" />
+          </svg>
         </div>
         <Link href="/new" className={`btn btn-primary btn-small ${s.cta}`}>
-          <span className={s.plus} aria-hidden>+</span> New day
+          <span className={s.plus} aria-hidden>+</span> new day
         </Link>
       </nav>
     </header>

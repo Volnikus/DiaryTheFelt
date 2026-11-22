@@ -10,7 +10,7 @@
 @keyframes float { 50% { translate: 0 -5px; } }
 .note p { margin: 8px 0 0; font-size: 0.95rem; line-height: 1.45; color: var(--paper-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .prints { position: relative; height: 122px; }
-.prints img { position: absolute; top: 14px; left: calc(16px + var(--k) * 58px); width: 92px; height: 70px; object-fit: cover; border-radius: 8px; border: 2px solid rgba(22, 22, 22, 0.85); transform: rotate(calc((var(--k) - 1) * 6deg)); box-shadow: 0 2px 6px rgba(22, 22, 22, 0.3); transition: transform var(--d-mid) var(--ease-spring); }
+.prints img { position: absolute; top: 14px; left: calc(16px + var(--k) * 58px); width: 92px; height: 70px; object-fit: cover; border-radius: 2px; border: 4px solid var(--sheet); transform: rotate(calc((var(--k) - 1) * 6deg)); box-shadow: 0 2px 6px rgba(22, 22, 22, 0.3); transition: transform 200ms var(--ease-out); }
 .prints:hover img { transform: rotate(calc((var(--k) - 1) * 10deg)) translateY(-4px); }
 .prints :global(.meta) { position: absolute; left: var(--s-4); bottom: 10px; }
 .song { display: flex; gap: var(--s-4); align-items: center; }
@@ -19,12 +19,12 @@
 @keyframes thump { 0% { transform: scale(1.6); box-shadow: none; } 50%, 100% { transform: scale(1); box-shadow: none; } }
 
 .arrow { display: grid; justify-items: center; gap: 8px; }
-.arrow span { position: relative; width: 2px; height: 140px; border-radius: 2px; background: rgba(217, 71, 43, 0.12); overflow: hidden; }
-.arrow span::after { content: ""; position: absolute; left: 0; right: 0; height: 40%; background: var(--accent); animation: flow 1.8s linear infinite; }
+.arrow span { position: relative; width: 2px; height: 140px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.arrow span::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 100%; background: linear-gradient(transparent, var(--pen)); opacity: 0.5; }
 @keyframes flow { from { top: -40%; } to { top: 100%; } }
 
-.output { position: relative; display: block; aspect-ratio: 4 / 4.2; max-width: 480px; width: 100%; justify-self: center; overflow: hidden; isolation: isolate; border-radius: var(--r-3);  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 24px 48px -20px rgba(0, 0, 0, 0.35); animation: develop 1.6s var(--ease-out) 300ms both; transition: box-shadow var(--d-mid); }
-.output:hover { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 28px 56px -20px rgba(0, 0, 0, 0.4); }
+.output { position: relative; display: block; aspect-ratio: 4 / 4.2; max-width: 480px; width: 100%; justify-self: center; overflow: hidden; isolation: isolate; border-radius: var(--r-3);  box-shadow: var(--shadow-photo); animation: develop 1.2s var(--ease-out) 200ms both; }
+
 .output::after { display: none; }
 @keyframes glint { 0%, 60% { background-position: 150% 0; } 100% { background-position: -100% 0; } }
 @keyframes develop { from { opacity: 0; filter: brightness(0.1) blur(10px); transform: translateZ(60px) scale(0.96); } }
@@ -41,10 +41,10 @@
 .outSwatches { position: absolute; z-index: 2; top: 16px; left: 16px; display: flex; gap: 3px; }
 .outSwatches i { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15); }
 
-.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--s-5); padding: 5px; border-radius: 4px; background: rgba(22, 22, 22, 0.04); border: 1px solid rgba(22, 22, 22, 0.07); width: fit-content; max-width: 100%; }
-.tabs button { padding: 8px 14px; border-radius: 4px; font-size: 0.86rem; font-weight: 560; color: var(--paper-dim); transition: background var(--d-mid) var(--ease-out), color var(--d-fast); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 24px; padding: 4px; border-radius: var(--r-2); background: var(--ink-1); width: fit-content; max-width: 100%; }
+.tabs button { padding: 8px 12px; border-radius: var(--r-1); font-size: 0.9rem; font-weight: 500; color: var(--paper-dim); transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out); }
 .tabs button:hover { color: var(--paper); }
-.tabs button[aria-selected="true"] { background: rgba(22, 22, 22, 0.11); color: var(--paper); box-shadow: inset 0 1px 0 rgba(22, 22, 22, 0.1); }
+.tabs button[aria-selected="true"] { background: var(--sheet); color: var(--paper); box-shadow: 0 1px 2px rgba(27, 31, 59, 0.08), 0 0 0 1px var(--line); }
 .tabNo { font-size: 0.78rem; font-weight: 500; color: var(--safelight); margin-right: 6px; }
 
 @media (max-width: 860px) {

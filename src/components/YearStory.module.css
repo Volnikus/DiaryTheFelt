@@ -2,8 +2,8 @@
 .yearLink { padding: 6px 14px; font-size: 0.86rem; color: var(--paper-dim); text-decoration: none; border-radius: 2.5px; }
 .yearLink[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
 .story {
-  position: relative; width: min(100%, 460px); aspect-ratio: 9 / 15; border-radius: 20px; overflow: hidden;
-  border: 1px solid var(--line); box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.3); transition: background 0.8s var(--ease-out);
+  position: relative; width: min(100%, 460px); aspect-ratio: 9 / 15; border-radius: var(--r-3); overflow: hidden;
+  border: 1px solid var(--line); box-shadow: var(--shadow-1); transition: background-color 0.8s var(--ease-out);
   user-select: none; touch-action: manipulation;
 }
 .bars { position: absolute; top: 14px; left: 14px; right: 14px; display: flex; gap: 4px; z-index: 3; }
@@ -19,9 +19,9 @@
 .prev { left: 0; } .next { right: 0; width: 65%; }
 .prev:disabled, .next:disabled { cursor: default; }
 .count { position: absolute; bottom: 14px; right: 18px; margin: 0; font-family: var(--font-ui); font-size: 0.7rem; color: var(--paper-faint); z-index: 3; }
-.kicker { margin: 0; font-family: var(--font-ui); font-size: 0.74rem; letter-spacing: 0; color: var(--paper-dim); }
-.huge { margin: 0; font-family: var(--font-ui); font-weight: 700; font-size: clamp(5.16rem, 25.8vw, 7.74rem); line-height: 0.85; letter-spacing: -0.04em; color: var(--accent); }
-.big { margin: 0; font-family: var(--font-ui); font-weight: 650; font-size: clamp(2.24rem, 9.46vw, 3.1rem); line-height: 1; letter-spacing: -0.03em; }
+.kicker { margin: 0; font-family: var(--font-ui); font-size: 0.8rem; letter-spacing: 0; color: var(--paper-dim); }
+.huge { margin: 0; font-family: var(--font-display); font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144; font-weight: 500; font-size: clamp(5rem, 25vw, 7.5rem); line-height: 0.9; letter-spacing: -0.03em; color: var(--pen); font-variant-numeric: tabular-nums; }
+.big { margin: 0; font-family: var(--font-display); font-variation-settings: "SOFT" 60, "WONK" 1; font-weight: 500; font-size: clamp(2.2rem, 9.4vw, 3rem); line-height: 1.02; letter-spacing: -0.02em; }
 .mid { margin: 0; font-family: var(--font-ui); font-weight: 600; font-size: clamp(1.55rem, 6.02vw, 2.06rem); line-height: 1.05; }
 .line { margin: 0; font-size: 1.1rem; line-height: 1.4; color: var(--paper-2); }
 .line b { color: var(--paper); font-weight: 600; }
@@ -42,7 +42,7 @@
 .moments { display: grid; gap: var(--s-3); margin-top: var(--s-2); }
 .moment { display: grid; grid-template-columns: 72px 1fr; gap: var(--s-3); align-items: center; padding: 8px; border-radius: 10px; background: rgba(22, 22, 22, 0.06); color: var(--paper); text-decoration: none; }
 .moment img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; }
-.moment em { display: block; font-style: normal; font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0; color: var(--paper-dim); }
+.moment em { display: block; font-style: normal; font-family: var(--font-ui); font-size: 0.75rem; letter-spacing: 0; color: var(--paper-dim); }
 .moment strong { font-weight: 500; }
 .actions { display: flex; gap: var(--s-3); margin-top: var(--s-4); }
 @media (prefers-reduced-motion: reduce) { .bars i.run { animation: none; width: 100%; } }

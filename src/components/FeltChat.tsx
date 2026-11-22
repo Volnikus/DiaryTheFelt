@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AiError, useAiStatus } from "@/lib/ai/engine";
 import { getMascotContext } from "@/lib/client/mascot-context";
+import { NimbusMark } from "./NimbusMark";
 import s from "./FeltChat.module.css";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -15,7 +16,6 @@ export function FeltChat() {
   const [busy, setBusy] = useState(false);
   const status = useAiStatus();
   const list = useRef<HTMLDivElement>(null);
-  const ready = status.state === "ready";
 
   useEffect(() => { list.current?.scrollTo({ top: list.current.scrollHeight }); }, [msgs]);
   useEffect(() => {
@@ -53,16 +53,17 @@ export function FeltChat() {
   return (
     <>
       <button type="button" className={s.launcher} onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls="felt-chat">
-        <span className={s.dot} data-on={ready || undefined} aria-hidden />
-        {open ? "Close" : "Ask Felt AI"}
+        <NimbusMark size={30} />
+        <span>{open ? "Close" : "Ask Nimbus"}</span>
       </button>
 
       {open && (
-        <section id="felt-chat" className={s.panel} role="dialog" aria-label="Felt AI chat">
+        <section id="felt-chat" className={s.panel} role="dialog" aria-label="Chat with Nimbus">
           <header className={s.head}>
-            <div>
-              <h2 className={s.title}>Felt AI</h2>
-              <p className={s.sub}>Messages go through Felt’s server to an AI service only to get a reply. Felt does not save them.</p>
+            <NimbusMark size={36} />
+            <div className={s.headText}>
+              <h2 className={s.title}>Nimbus</h2>
+              <p className={s.sub}>Replies come from an AI service through Felt’s server. Felt does not save the chat.</p>
             </div>
             <button type="button" className={s.close} onClick={() => setOpen(false)} aria-label="Close chat">×</button>
           </header>
@@ -71,7 +72,7 @@ export function FeltChat() {
           <div className={s.list} ref={list}>
             {msgs.length === 0 && (
               <div className={s.empty}>
-                <p>Ask anything: help describing your day, a title, a song idea, or a question of your own.</p>
+                <p>Ask for help describing your day, a title, a song idea, or just tell me how it went.</p>
               </div>
             )}
             {msgs.map((m, i) => (
