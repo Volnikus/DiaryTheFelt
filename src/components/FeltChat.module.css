@@ -1,6 +1,6 @@
 /* Nimbus: the soft diary cloud drifting in the corner; its chat sits inside a ring of cloud puffs,
    with a slow coloured glow along the screen edges while it listens. */
-.float { position: fixed; right: 24px; bottom: 24px; z-index: 250; display: grid; justify-items: end; gap: 8px; pointer-events: none; }
+.float { view-transition-name: nimbus; position: fixed; right: 24px; bottom: 24px; z-index: 250; display: grid; justify-items: end; gap: 8px; pointer-events: none; }
 .cloud { pointer-events: auto; display: block; }
 .bubble { pointer-events: none; margin: 0; max-width: 220px; padding: 8px 12px; background: #fff; color: #11110F; border-radius: 6px; font-size: 0.9rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; box-shadow: 0 10px 30px rgba(17, 17, 15, 0.25); }
 

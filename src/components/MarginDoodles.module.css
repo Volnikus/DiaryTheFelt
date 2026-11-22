@@ -1,0 +1,7 @@
+/* The margin: the strip left of the red line. Doodles stack down it like notes. */
+.margin { position: absolute; top: 16px; bottom: 16px; left: 4px; width: calc(var(--cell) * 2 - 8px); display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; overflow: hidden; }
+.doodle { flex: none; overflow: visible; color: var(--pen); }
+.doodle path { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; filter: url(#felt-rough); }
+
+.row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 24px; color: currentColor; opacity: 0.85; }
+.row .doodle { color: inherit; }

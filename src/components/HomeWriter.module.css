@@ -1,7 +1,7 @@
 /* The writing surface is graph paper (the world); the colour lives only in Mote (the moment). */
 .writer { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: center; }
 
-.page { padding: 24px 24px 20px calc(var(--cell) * 2 + 16px); border-radius: var(--r-1); box-shadow: var(--shadow-1); }
+.page { position: relative; padding: 24px 24px 20px calc(var(--cell) * 2 + 16px); border-radius: var(--r-1); box-shadow: var(--shadow-1); }
 .field textarea {
   display: block; width: 100%; resize: none; border: 0; background: transparent; padding: 0;
   line-height: calc(var(--cell) * 2); min-height: calc(var(--cell) * 6);

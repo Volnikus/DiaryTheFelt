@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { HomeWriter } from "@/components/HomeWriter";
+import { InView } from "@/components/InView";
+import { PeekingMote } from "@/components/PeekingMote";
 import { MemoryCard } from "@/components/MemoryCard";
 import { Arrow, Underline } from "@/components/Sketch";
 import { StoryScroll } from "@/components/StoryScroll";
@@ -104,9 +106,9 @@ export default async function Home() {
           <h2 className={`display ${s.h2}`}>Five ways a day can look</h2>
           <p className={s.sub}>Felt scores every entry against five styles, then tunes colour, type, texture and motion to that one day.</p>
         </div>
-        <ul className={s.styles}>
-          {STYLES.map(([name, text, when]) => (
-            <li key={name}>
+        <InView as="ul" className={s.styles}>
+          {STYLES.map(([name, text, when], i) => (
+            <li key={name} style={{ ["--i" as string]: i }}>
               <div>
                 <h3>{name}</h3>
                 <p>{text}</p>
@@ -114,22 +116,22 @@ export default async function Home() {
               <span className={s.when}>{when}</span>
             </li>
           ))}
-        </ul>
+        </InView>
       </section>
 
       {/* ---------- the back of the notebook ---------- */}
       <section className={`wrap cv ${s.section}`}>
         <p className="section-label">In the back of the notebook</p>
-        <ul className={s.extras}>
-          {EXTRAS.map(([href, title, text]) => (
-            <li key={title}>
+        <InView as="ul" className={s.extras}>
+          {EXTRAS.map(([href, title, text], i) => (
+            <li key={title} style={{ ["--i" as string]: i }}>
               <Link href={href}>
                 <svg viewBox="0 0 24 24" className={s.tick} aria-hidden><path d="M3 13 C 6 15, 8 18, 9 20 C 12 13, 16 8, 22 3" /></svg>
                 <span><b>{title}</b> — {text}</span>
               </Link>
             </li>
           ))}
-        </ul>
+        </InView>
       </section>
 
       {preview.length > 0 && (
@@ -153,13 +155,14 @@ export default async function Home() {
       )}
 
       <section className={`wrap ${s.section}`}>
-        <div className={s.final}>
+        <InView className={s.final} amount={0.6}>
+          <PeekingMote />
           <div>
             <h2 className={`display ${s.h2}`}>Start with today</h2>
             <p>It takes about two minutes. You can edit or delete any page later.</p>
           </div>
           <Link href="/new" className="btn btn-primary">Open a new page</Link>
-        </div>
+        </InView>
       </section>
     </main>
   );

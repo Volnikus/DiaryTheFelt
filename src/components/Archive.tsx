@@ -6,6 +6,7 @@ import type { EntrySummary } from "@/lib/types";
 import { MOODS } from "@/lib/moods";
 import type { DayMood } from "@/lib/types";
 import { MemoryCard } from "./MemoryCard";
+import { TossIn } from "./TossIn";
 import { MoodCalendar } from "./MoodCalendar";
 import s from "./Archive.module.css";
 
@@ -121,9 +122,9 @@ export function Archive({ initial }: { initial: Summary[] }) {
               </h2>
               <div className={s.grid}>
                 {list.map((e, i) => (
-                  <div key={e.id} className={s.cardIn} style={{ animationDelay: `${i * 70}ms` }}>
+                  <TossIn key={e.id} tilt={[-1, 0.8, -0.4][i % 3]} index={i % 6}>
                     <MemoryCard entry={{ ...e, keywords: "" }} priority={i < 3} />
-                  </div>
+                  </TossIn>
                 ))}
               </div>
             </section>

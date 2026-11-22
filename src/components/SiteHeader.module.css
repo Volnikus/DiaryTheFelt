@@ -1,6 +1,6 @@
 /* The top of the page: plain paper, no bar. Once you scroll, a strip of the same paper
    follows you with a dashed edge, like a page folded over. */
-.header { position: sticky; top: 0; z-index: 60; border-bottom: 1px solid transparent; transition: background-color 0.3s ease, border-color 0.3s ease; }
+.header { view-transition-name: site-header; position: sticky; top: 0; z-index: 60; border-bottom: 1px solid transparent; transition: background-color 0.3s ease, border-color 0.3s ease; }
 .overlay { position: fixed; left: 0; right: 0; }
 .solid { background: var(--ink-0); border-bottom-color: var(--line); }
 .pill { max-width: var(--max); margin: 0 auto; height: 64px; padding: 0 var(--gutter); display: flex; align-items: center; gap: 8px; }
@@ -14,7 +14,13 @@
 .active { position: absolute; left: 0; bottom: 16px; height: 8px; overflow: visible; pointer-events: none; transition: transform 320ms var(--ease-out), width 320ms var(--ease-out), opacity 160ms var(--ease-out); filter: url(#felt-rough); }
 .active path { fill: none; stroke: var(--pen); stroke-width: 2.6; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 
-.cta { margin-left: 12px; }
+.cta { margin-left: 4px; }
+/* paper sounds on/off, drawn in pen */
+.sound { display: grid; place-items: center; width: 40px; height: 40px; margin-left: 8px; border-radius: var(--r-1); color: var(--paper-dim); transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out); }
+.sound:hover { background: var(--ink-1); color: var(--paper); }
+.sound[aria-pressed="true"] { color: var(--pen); }
+.sound svg { width: 22px; height: 22px; overflow: visible; filter: url(#felt-rough); }
+.sound path { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 .plus { font-size: 1.15em; line-height: 1; margin-top: -2px; }
 
 /* memory pages paint their own world; the header steps back */
@@ -24,5 +30,6 @@
   .pill { height: 58px; gap: 4px; }
   .link { padding: 0 9px; }
   .links a:first-child { display: none; }
+  .sound { width: 34px; margin-left: 0; }
   .brand b { font-size: 1.45rem; }
 }

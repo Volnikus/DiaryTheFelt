@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Flipbook } from "@/components/Flipbook";
 import { MoodCalendar } from "@/components/MoodCalendar";
 import { YearStory } from "@/components/YearStory";
 import { repo } from "@/lib/server/db";
@@ -17,6 +18,8 @@ export default async function YearPage({ searchParams }: { searchParams: Promise
   const asked = Number((await searchParams).y);
   const year = years.includes(asked) ? asked : years[0] ?? new Date().getFullYear();
   const stats = yearStats(entries, year);
+  const shown = (stats.demo ? entries.filter((e) => e.demo) : own.filter((e) => e.day.startsWith(String(year)))).slice().sort((a, b) => a.day.localeCompare(b.day));
+  const days = shown.map((e) => ({ id: e.id, day: e.day, title: e.title, mood: e.mood ?? "blank", cover: e.cover, accent: e.palette.accent, excerpt: e.excerpt }));
 
   return (
     <main className="wrap" style={{ paddingTop: "var(--s-7)", paddingBottom: "var(--s-9)" }}>
@@ -25,6 +28,7 @@ export default async function YearPage({ searchParams }: { searchParams: Promise
           Your {year} in review
         </h1>
       </header>
+      <Flipbook days={days} year={year} />
       <YearStory stats={stats} years={years} />
       <section style={{ marginTop: "var(--s-9)" }}>
         <h2 style={{ margin: "0 0 var(--s-5)", fontSize: "1.5rem", fontWeight: 650, letterSpacing: "-0.02em" }}>Mood calendar</h2>

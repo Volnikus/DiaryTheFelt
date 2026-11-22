@@ -18,7 +18,7 @@ export function MoodMeter({ mood, blend, themed }: { mood: MoodCount; blend: The
   return (
     <div className={s.meter} aria-live="polite">
       <div className={s.head}>
-        <MoodDoodle mood={mood} color={themed ? blend.palette.accent : "#9DBBF5"} size={96} />
+        <MoodDoodle mood={mood} color={themed ? blend.palette.accent : "#9DBBF5"} size={96} follow />
         <div className={s.read}>
           <span className={s.kicker}>today feels</span>
           <AnimatePresence mode="wait" initial={false}>

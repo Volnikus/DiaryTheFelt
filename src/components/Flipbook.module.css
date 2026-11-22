@@ -1,0 +1,51 @@
+/* The year as a flipbook: one page lying on a stack, turned from the spine on the left. */
+.wrap { display: grid; gap: 16px; margin-bottom: 64px; }
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px; }
+.hint { margin: 4px 0 0; font-size: 0.9rem; color: var(--paper-dim); }
+
+.book {
+  position: relative; width: min(560px, 100%); aspect-ratio: 4 / 3.3; margin: 8px auto 0;
+  perspective: 1800px; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none;
+}
+.book:active { cursor: grabbing; }
+.page, .leaf { position: absolute; inset: 0; border-radius: 4px 12px 12px 4px; }
+.page { background: var(--sheet); box-shadow: var(--shadow-1); overflow: hidden; }
+.leaf { transform-origin: left center; transform-style: preserve-3d; will-change: transform; }
+.front, .back { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--sheet); }
+.front { box-shadow: var(--shadow-1); }
+.back { transform: rotateY(180deg); box-shadow: inset -24px 0 32px -24px rgba(27, 31, 59, 0.25); }
+.shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(27, 31, 59, 0) 40%, rgba(27, 31, 59, 0.9)); pointer-events: none; }
+/* the spine */
+.book::before { content: ""; position: absolute; left: -6px; top: 4px; bottom: 4px; width: 10px; border-radius: 6px 0 0 6px; background: var(--paper); opacity: 0.85; z-index: 4; }
+/* the pages still to come peek out on the right */
+.edges { position: absolute; inset: 0; pointer-events: none; }
+.edges i { position: absolute; top: calc(var(--k) * 1.5px); bottom: calc(var(--k) * 1.5px); right: calc(var(--k) * -2.5px); left: 8px; border-radius: 4px 12px 12px 4px; background: var(--sheet); box-shadow: 0 1px 2px rgba(27, 31, 59, 0.12); z-index: calc(-1 * var(--k)); }
+/* the dog-eared corner you grab */
+.corner { position: absolute; right: 0; bottom: 0; width: 44px; height: 44px; z-index: 5; pointer-events: none; background: linear-gradient(135deg, transparent 50%, rgba(27, 31, 59, 0.08) 50%, var(--ink-1) 60%); border-radius: 0 0 12px 0; }
+
+/* faces */
+.cover { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 4px; text-align: center; background: var(--paper); color: #F6F5F0; }
+.cover :global(.hand) { margin: 0; font-size: 1.6rem; color: #FFE45C; }
+.cover h3 { margin: 0; font-size: clamp(4rem, 12vw, 7rem); line-height: 1; color: #F6F5F0; }
+.cover p:last-child { margin: 8px 0 0; font-size: 0.95rem; opacity: 0.75; }
+.end { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 16px; }
+.end :global(.hand) { margin: 0; font-size: 1.7rem; color: var(--pen); }
+
+.day { position: absolute; inset: 0; display: grid; grid-template-rows: 1fr auto auto auto auto; gap: 4px; padding: 16px 20px 20px; color: var(--paper); }
+.wash { position: absolute; left: -10%; top: -20%; width: 70%; height: 70%; border-radius: 50%; opacity: 0.18; filter: url(#felt-watercolor) blur(2px); pointer-events: none; }
+.day img { position: relative; width: 100%; height: 100%; min-height: 0; object-fit: cover; border: 6px solid #fff; box-shadow: var(--shadow-photo); rotate: -1.5deg; }
+.date { position: relative; margin-top: 8px; font-size: 1.3rem; color: var(--pen); }
+.title { position: relative; font-family: var(--font-display); font-variation-settings: "SOFT" 60, "WONK" 1; font-weight: 500; font-size: clamp(1.25rem, 2.6vw, 1.6rem); line-height: 1.1; letter-spacing: -0.01em; }
+.mood { position: relative; display: inline-flex; align-items: center; gap: 8px; font-size: 0.86rem; color: var(--paper-2); }
+.mood i { width: 12px; height: 12px; border-radius: 50%; }
+.excerpt { position: relative; font-size: 0.86rem; line-height: 1.45; color: var(--paper-dim); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* a strip of every day's colour under the book; tap to jump */
+.track { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px; max-width: 560px; margin: 8px auto 0; }
+.track button { width: 18px; height: 8px; border-radius: 4px; opacity: 0.45; transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out); }
+.track button[data-on] { opacity: 1; transform: scaleY(1.5); }
+
+@media (max-width: 560px) {
+  .book { aspect-ratio: 3 / 3.6; }
+  .day { padding: 12px 14px 16px; }
+}

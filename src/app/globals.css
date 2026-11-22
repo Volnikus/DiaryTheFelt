@@ -132,7 +132,7 @@ button { cursor: pointer; background: none; border: 0; padding: 0; }
 .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- layout helpers ---------- */
-.wrap { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+.wrap { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--gutter); }
 .rule { height: 0; border: 0; border-top: 1px solid var(--line); margin: 0; }
 .cv { content-visibility: auto; contain-intrinsic-size: auto 900px; }
 /* graph paper with a red margin — the writing surface */
@@ -233,4 +233,31 @@ article + .site-footer { margin-top: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
+
+/* ---------- page turn ----------
+   Moving between pages turns the leaf: the old page lifts off the spine on the left and
+   turns over (forward), or the previous leaf turns back over the page (back).
+   The header and Nimbus stay where they are. */
+::view-transition-group(root) { animation-duration: 720ms; }
+::view-transition-image-pair(root) { isolation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { mix-blend-mode: normal; animation-timing-function: cubic-bezier(0.55, 0.05, 0.3, 1); animation-duration: 720ms; animation-fill-mode: both; transform-origin: left center; }
+html[data-turn="forward"]::view-transition-old(root) { animation-name: leaf-away; z-index: 2; }
+html[data-turn="forward"]::view-transition-new(root) { animation-name: leaf-under; z-index: 1; }
+html[data-turn="back"]::view-transition-old(root) { animation-name: leaf-under-out; z-index: 1; }
+html[data-turn="back"]::view-transition-new(root) { animation-name: leaf-back; z-index: 2; }
+@keyframes leaf-away {
+  0% { transform: perspective(2400px) rotateY(0deg); filter: drop-shadow(0 0 0 rgba(27, 31, 59, 0)); }
+  40% { filter: drop-shadow(24px 0 32px rgba(27, 31, 59, 0.22)) brightness(0.98); }
+  100% { transform: perspective(2400px) rotateY(-100deg); filter: drop-shadow(40px 0 40px rgba(27, 31, 59, 0.3)) brightness(0.8); }
+}
+@keyframes leaf-under { from { filter: brightness(0.86); } to { filter: none; } }
+@keyframes leaf-under-out { from { filter: none; } to { filter: brightness(0.86); } }
+@keyframes leaf-back {
+  0% { transform: perspective(2400px) rotateY(-100deg); filter: drop-shadow(40px 0 40px rgba(27, 31, 59, 0.3)) brightness(0.8); }
+  60% { filter: drop-shadow(24px 0 32px rgba(27, 31, 59, 0.22)) brightness(0.98); }
+  100% { transform: perspective(2400px) rotateY(0deg); filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }

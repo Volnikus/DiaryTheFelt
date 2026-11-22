@@ -7,6 +7,8 @@ import { countMood } from "@/lib/analysis/mood";
 import { analyzeTextLocally } from "@/lib/analysis/text";
 import { blendThemes } from "@/lib/engine/presets";
 import { faceFor } from "@/lib/engine/typeface";
+import { sfx } from "@/lib/client/sound";
+import { MarginDoodles } from "./MarginDoodles";
 import { MoodDoodle } from "./MoodDoodle";
 import s from "./HomeWriter.module.css";
 
@@ -62,6 +64,7 @@ export function HomeWriter() {
   return (
     <div className={s.writer}>
       <div className={`grid-paper ${s.page}`}>
+        <MarginDoodles text={live} quiet={!touched} max={5} />
         <label className={s.field}>
           <span className="visually-hidden">One line about today</span>
           <textarea
@@ -74,6 +77,7 @@ export function HomeWriter() {
             placeholder={touched ? "One line about today" : `${demo}▍`}
             onFocus={() => { if (!touched) { setTouched(true); setText(""); } }}
             onChange={(e) => { setTouched(true); setText(e.target.value); }}
+            onKeyDown={() => sfx.scratch()}
           />
         </label>
         <div className={s.foot}>
@@ -100,6 +104,7 @@ export function HomeWriter() {
                 initial={{ x: -260, y: 70, scale: 0.6, opacity: 0 }}
                 animate={{ x: [-260, -130, 0], y: [70, -70, 0], scale: [0.6, 1, 0.35], opacity: [0, 1, 1, 0] }}
                 transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], times: [0, 0.55, 1] }}
+                onAnimationComplete={() => { if (touched) sfx.plop(); }}
               />
             ))}
           </div>
@@ -109,7 +114,7 @@ export function HomeWriter() {
           animate={reduce ? undefined : { scale: gulp % 2 ? [1, 0.9, 1.05, 1] : [1, 0.91, 1.04, 1] }}
           transition={{ duration: 0.5, delay: gulp ? 0.6 : 0, ease: [0.22, 1, 0.36, 1] }}
         >
-          <MoodDoodle mood={mood} color={color} size={150} />
+          <MoodDoodle mood={mood} color={color} size={150} follow />
         </motion.div>
         <p className="hand">feels {WORD[mood.mood]}</p>
         <p className={s.counts}>{mood.positive} good · {mood.negative} hard · {face.label}</p>

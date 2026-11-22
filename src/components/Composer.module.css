@@ -19,7 +19,7 @@
 .dateRow input { max-width: 200px; }
 
 /* the writing page */
-.paper { padding: 16px 16px 12px calc(var(--cell) * 2 + 16px); border-radius: var(--r-1); box-shadow: var(--shadow-1); }
+.paper { position: relative; padding: 16px 16px 12px calc(var(--cell) * 2 + 16px); border-radius: var(--r-1); box-shadow: var(--shadow-1); }
 .textarea {
   display: block; width: 100%; min-height: calc(var(--cell) * 12); resize: vertical; padding: 0;
   background: transparent; border: 0; border-radius: 0;
@@ -46,7 +46,9 @@
 
 .strip { display: flex; gap: 20px; overflow-x: auto; padding: 16px 8px 20px; list-style: none; margin: 0; scrollbar-width: thin; }
 /* taped-in prints — the only tilted things on the page */
-.thumb { position: relative; flex: none; width: 172px; padding: 8px 8px 0; background: var(--sheet); box-shadow: var(--shadow-photo); cursor: grab; touch-action: pan-y; animation: pop 300ms var(--ease-out) both; }
+.thumb { position: relative; flex: none; width: 172px; padding: 8px 8px 0; background: var(--sheet); box-shadow: var(--shadow-photo); cursor: grab; touch-action: pan-y; animation: toss 560ms var(--ease-out) both; }
+/* a print tossed onto the page: it drops in crooked and lands */
+@keyframes toss { 0% { opacity: 0; transform: translate(36px, -64px) rotate(12deg) scale(1.08); } 60% { opacity: 1; } 100% { transform: none; } }
 @keyframes pop { from { opacity: 0; transform: translateY(8px); } }
 .thumb:active { cursor: grabbing; }
 .thumb:nth-child(odd) { rotate: -2deg; }

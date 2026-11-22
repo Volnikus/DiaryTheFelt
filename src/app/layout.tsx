@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { LazyChat } from "@/components/LazyChat";
+import { PageTurn } from "@/components/PageTurn";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SketchDefs } from "@/components/Sketch";
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <SiteFooter />
         <LazyChat />
+        <PageTurn />
       </body>
     </html>
   );

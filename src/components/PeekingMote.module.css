@@ -1,0 +1,5 @@
+/* a window just above the card's top edge: Mote rises out of the card and peeks over it */
+.peek { position: absolute; right: clamp(24px, 14%, 180px); bottom: 100%; width: 128px; height: 74px; overflow: hidden; pointer-events: none; }
+.peek > :global(svg) { position: absolute; left: 8px; top: 6px; pointer-events: auto; transform: translateY(0) rotate(-4deg); transition: transform 800ms var(--ease-out) 300ms; }
+:global([data-armed]:not([data-in])) > .peek > :global(svg) { transform: translateY(90px) rotate(10deg); }
+@media (prefers-reduced-motion: reduce) { .peek > :global(svg) { transition: none; } }

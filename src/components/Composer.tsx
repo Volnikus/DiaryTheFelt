@@ -17,6 +17,8 @@ import { SongSearch } from "./SongSearch";
 import { VoiceInput } from "./VoiceInput";
 import { Icon } from "./Icon";
 import { Circled } from "./Sketch";
+import { sfx } from "@/lib/client/sound";
+import { MarginDoodles } from "./MarginDoodles";
 import { MoodMeter } from "./MoodMeter";
 import { Waveform } from "./Waveform";
 import s from "./Composer.module.css";
@@ -180,6 +182,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
     if (list.length > take.length) setError("A day can hold up to 12 photographs.");
     const items: PhotoItem[] = take.map(() => ({ id: crypto.randomUUID(), preview: "", status: "processing" }));
     setPhotos((prev) => [...prev, ...items]);
+    sfx.tape();
     await Promise.all(
       take.map(async (file, i) => {
         try {
@@ -327,12 +330,14 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
             <input id="day" type="date" className="input" value={day} max={today()} onChange={(e) => setDay(e.target.value)} />
           </div>
           <div className={`grid-paper ${s.paper}`}>
+          <MarginDoodles text={text} max={12} />
           <textarea
             className={s.textarea}
             data-face={face.key}
             style={{ fontFamily: face.family, fontSize: `calc(clamp(1.05rem, 1.4vw, 1.18rem) * ${face.scale})`, fontWeight: face.weight }}
             value={text}
             onChange={(e) => setText(e.target.value)}
+            onKeyDown={() => sfx.scratch()}
             placeholder={`Write about today. ${prompt}`}
             aria-label="What happened today, and how did it feel?"
             maxLength={8000}
