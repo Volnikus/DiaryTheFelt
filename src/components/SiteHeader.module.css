@@ -6,7 +6,7 @@
 .pill { max-width: var(--max); margin: 0 auto; height: 64px; padding: 0 var(--gutter); display: flex; align-items: center; gap: 8px; }
 
 .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; color: var(--paper); }
-.brand b { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 72; font-weight: 500; font-size: 1.4rem; letter-spacing: -0.02em; line-height: 1; }
+.brand b { font-family: var(--font-display); font-style: italic; font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 72; font-weight: 520; font-size: 1.55rem; letter-spacing: -0.02em; line-height: 1; padding-right: 2px; }
 
 .links { position: relative; display: flex; align-items: center; height: 100%; }
 .link { position: relative; display: flex; align-items: center; height: 100%; padding: 0 12px; font-size: 0.95rem; font-weight: 500; color: var(--paper-dim); transition: color var(--d-fast); }
@@ -31,5 +31,5 @@
   .link { padding: 0 9px; }
   .links a:first-child { display: none; }
   .sound { width: 34px; margin-left: 0; }
-  .brand b { font-size: 1.45rem; }
+  .brand b { font-size: 1.5rem; }
 }

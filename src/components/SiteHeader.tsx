@@ -38,7 +38,7 @@ export function SiteHeader() {
     <header className={`${s.header} ${onMemory ? s.overlay : ""} ${scrolled || onMemory ? s.solid : ""}`}>
       <nav className={s.pill} aria-label="Main">
         <Link href="/" className={s.brand} aria-label="Felt — home">
-          <Logo size={30} />
+          <Logo size={32} />
           <b>felt</b>
         </Link>
         <div className={s.links} ref={links}>

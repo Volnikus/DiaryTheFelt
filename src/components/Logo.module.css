@@ -1,1 +1,7 @@
-.logo { display: block; flex: none; overflow: visible; transition: transform 400ms var(--ease-spring); }
+.logo { display: block; flex: none; overflow: visible; transition: transform 300ms var(--ease-out); }
+/* Mote blinks when you point at the logo */
+.eyes { transform-box: fill-box; transform-origin: center; }
+:global(a):hover > .logo { transform: rotate(-8deg); }
+:global(a):hover > .logo .eyes { animation: blink 360ms var(--ease-out); }
+@keyframes blink { 50% { transform: scaleY(0.1); } }
+@media (prefers-reduced-motion: reduce) { :global(a):hover > .logo, :global(a):hover > .logo .eyes { transform: none; animation: none; } }
