@@ -1,5 +1,0 @@
-/* Navy ground with a few faint drifting clouds. */
-.ambient { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: var(--ink-0); }
-.cloud { position: absolute; left: 0; height: auto; animation: drift linear infinite; will-change: transform; }
-@keyframes drift { from { transform: translateX(-20vw); } to { transform: translateX(110vw); } }
-@media (prefers-reduced-motion: reduce) { .cloud { animation: none; transform: translateX(60vw); } }

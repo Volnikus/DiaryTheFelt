@@ -7,28 +7,27 @@
 }
 .overlay { position: fixed; left: 0; right: 0; }
 .solid {
-  background: rgba(18, 19, 28, 0.72);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  backdrop-filter: blur(18px) saturate(160%);
-  border-bottom-color: rgba(255, 255, 255, 0.08);
+  background: rgba(250, 250, 248, 0.92); -webkit-backdrop-filter: saturate(160%) blur(10px); backdrop-filter: saturate(160%) blur(10px);
+  border-bottom-color: var(--line);
 }
 .pill {
   max-width: var(--max); margin: 0 auto; height: 64px; padding: 0 var(--gutter);
   display: flex; align-items: center; gap: 8px;
-  animation: drop 700ms var(--ease-out) both;
+  
 }
 @keyframes drop { from { opacity: 0; transform: translateY(-10px); } }
 
-.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; color: #fff; }
-.brand:hover svg { transform: rotate(-6deg); }
-.brand svg { transition: transform 500ms var(--ease-spring); }
-.brand b { font-weight: 500; font-size: 1.45rem; letter-spacing: -0.07em; text-transform: lowercase; line-height: 1; }
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; color: var(--paper); }
+
+
+.brand b { font-weight: 700; font-size: 1.2rem; letter-spacing: -0.03em; line-height: 1; }
 
 .links { position: relative; display: flex; align-items: center; height: 100%; }
-.link { position: relative; display: flex; align-items: center; height: 100%; padding: 0 14px; font-size: 0.95rem; font-weight: 500; text-transform: lowercase; color: rgba(255, 255, 255, 0.6); transition: color var(--d-fast); }
-.link:hover, .link[aria-current="page"] { color: #fff; }
+.link { position: relative; display: flex; align-items: center; height: 100%; padding: 0 14px; font-size: 0.92rem; font-weight: 500; color: var(--paper-dim); transition: color var(--d-fast); }
+.link:hover, .link[aria-current="page"] { color: var(--paper); }
+.link[aria-current="page"] span { font-weight: 600; }
 .link span { position: relative; z-index: 1; }
-.active { position: absolute; left: 0; bottom: -1px; height: 2px; background: var(--accent); pointer-events: none; transition: transform 520ms var(--ease-spring), width 520ms var(--ease-spring), opacity var(--d-fast); }
+.active { display: none; }
 
 .cta { margin-left: 10px; }
 .plus { display: none; }

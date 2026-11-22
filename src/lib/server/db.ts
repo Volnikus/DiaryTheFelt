@@ -5,6 +5,7 @@ import { del, get, list, put } from "@vercel/blob";
 import postgres from "postgres";
 import type { Entry, EntrySummary } from "../types";
 import { DEMO_OWNER } from "./owner-token";
+import { countMood } from "../analysis/mood";
 
 // Postgres when DATABASE_URL is set; otherwise Vercel Blob (the same store as
 // the photos) when BLOB_READ_WRITE_TOKEN is set; otherwise a local JSON file.
@@ -16,6 +17,7 @@ export interface ListQuery {
   from?: string;
   to?: string;
   scope?: "all" | "mine" | "demo";
+  mood?: string;
 }
 
 export function summarize(e: Entry): EntrySummary {
@@ -37,11 +39,14 @@ export function summarize(e: Entry): EntrySummary {
     bpm: e.musicProfile.bpm,
     song,
     photoCount: e.photos.length,
+    mood: countMood(e.text).mood,
     keywords: [e.title, e.text, e.analysis.atmosphere, e.analysis.motifs.join(" "), e.analysis.feelings.join(" "), song].join(" ").toLowerCase(),
   };
 }
 
 function matches(s: EntrySummary, q: ListQuery) {
+  s.mood ??= countMood(s.excerpt).mood;
+  if (q.mood && s.mood !== q.mood) return false;
   if (q.from && s.day < q.from) return false;
   if (q.to && s.day > q.to) return false;
   if (q.scope === "mine" && s.demo) return false;

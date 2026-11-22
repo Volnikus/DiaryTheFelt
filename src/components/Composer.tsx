@@ -10,7 +10,11 @@ import { PROVIDER_LABEL } from "@/lib/music-link";
 import { countMood } from "@/lib/analysis/mood";
 import { blendThemes } from "@/lib/engine/presets";
 import { faceFor } from "@/lib/engine/typeface";
-import { setMascotContext } from "./CloudMascot";
+import { aiMusic, aiTitle, type TrackHit } from "@/lib/ai";
+import { useAiStatus } from "@/lib/ai/engine";
+import { setMascotContext } from "@/lib/client/mascot-context";
+import { SongSearch } from "./SongSearch";
+import { VoiceInput } from "./VoiceInput";
 import { Icon } from "./Icon";
 import { MoodMeter } from "./MoodMeter";
 import { Waveform } from "./Waveform";
@@ -28,7 +32,7 @@ type PhotoItem = {
 
 type FileMusic = { kind: "file"; name: string; file?: File; media?: MediaRef; preview: string; analysis?: AudioAnalysis; status: "processing" | "ready" | "error"; error?: string };
 type LinkPreview = { provider: keyof typeof PROVIDER_LABEL; embedUrl: string | null; title: string | null; artist: string | null; thumbnail: string | null; url: string };
-type LinkMusic = { kind: "link"; url: string; reason?: string; preview: LinkPreview | null; status: "idle" | "loading" | "ready" | "error"; error?: string; feel: MusicFeel };
+type LinkMusic = { kind: "link"; url: string; reason?: string; pickedBy?: "ai" | "local"; trackId?: string; spotifyUrl?: string; analysis?: AudioAnalysis; measuring?: boolean; preview: LinkPreview | null; status: "idle" | "loading" | "ready" | "error"; error?: string; feel: MusicFeel };
 type Narration = { blob?: Blob; media?: MediaRef; url: string };
 
 const AUDIO_TYPES: Record<string, string> = { mp3: "audio/mpeg", wav: "audio/wav", m4a: "audio/mp4", aac: "audio/aac", ogg: "audio/ogg", oga: "audio/ogg", webm: "audio/webm", flac: "audio/flac" };
@@ -60,7 +64,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
       feel: m.feel ?? { bpm: null, energy: 0.5, mode: "unknown" },
     };
   });
-  const [musicTab, setMusicTab] = useState<"file" | "link" | "ai">(initial?.music.kind ?? "ai");
+  const [musicTab, setMusicTab] = useState<"file" | "link" | "ai" | "spotify">(initial?.music.kind ?? "ai");
   const [narration, setNarration] = useState<Narration | null>(initial?.narration ? { media: initial.narration, url: initial.narration.url } : null);
   const [phase, setPhase] = useState<{ step: string; progress: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +88,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
   const themed = settled.mood.hits.length > 0;
   const face = useMemo(() => faceFor(settled.mood, settled.reading), [settled]);
   const dayVars = (themed
-    ? { "--accent": blend.palette.accent, "--day-glow": blend.palette.glow, "--day-ground": blend.palette.ground }
+    ? {}
     : {}) as React.CSSProperties;
   useEffect(() => { setMascotContext(text); }, [text]);
   useEffect(() => () => setMascotContext(""), []);
@@ -94,51 +98,58 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
   const [picking, setPicking] = useState(false);
   const [naming, setNaming] = useState(false);
 
+  const [picked, setPicked] = useState<string[]>([]);
+  const aiReady = useAiStatus().state === "ready";
+
+  const applyTrack = useCallback((tr: TrackHit, extra?: { reason?: string; feel?: MusicFeel; pickedBy?: "ai" | "local" }) => {
+    setMusic({
+      kind: "link", url: tr.url, status: "ready", reason: extra?.reason, pickedBy: extra?.pickedBy, trackId: tr.id, spotifyUrl: tr.spotifyUrl,
+      preview: { provider: tr.source === "spotify" ? "spotify" : "apple", embedUrl: tr.embedUrl, title: tr.title, artist: tr.artist, thumbnail: tr.image, url: tr.url },
+      feel: extra?.feel ?? { bpm: null, energy: 0.5, mode: "unknown" },
+      measuring: Boolean(tr.previewUrl),
+    });
+    if (!tr.previewUrl) return;
+    // Listen to the official 30-second preview in the browser: real tempo, key and energy shape the memory.
+    // The preview is only analysed here — it is never stored or re-shared.
+    void (async () => {
+      let analysis: AudioAnalysis | undefined;
+      try {
+        const res = await fetch(tr.previewUrl!);
+        if (res.ok) analysis = await analyzeAudioFile(new File([await res.blob()], "preview.m4a", { type: res.headers.get("content-type") ?? "audio/mp4" }));
+      } catch {}
+      setMusic((m) => (m?.kind === "link" && m.trackId === tr.id
+        ? { ...m, measuring: false, analysis, feel: analysis ? { bpm: analysis.bpm, energy: analysis.energy, mode: analysis.mode } : m.feel }
+        : m));
+    })();
+  }, []);
+
   const pickSong = useCallback(async (): Promise<{ title: string; artist: string; reason: string } | null> => {
     if (text.trim().length < 12) { setError("Write a little about the day first, so the AI knows what to pick."); return null; }
     setPicking(true);
     setError(null);
     try {
-      const res = await fetch("/api/ai/music", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text, wish: wish.trim() || undefined }) });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "No song found");
+      const song = await aiMusic(text, wish.trim() || undefined, picked);
+      setPicked((p) => [...p, `${song.title} — ${song.artist}`]);
       setMusicTab("ai");
-      setMusic({
-        kind: "link", url: json.url, status: "ready", reason: json.reason,
-        preview: { provider: "other", embedUrl: null, title: json.title, artist: json.artist, thumbnail: null, url: json.url },
-        feel: { bpm: Math.round(json.bpm), energy: json.energy, mode: json.mode },
-      });
-      return { title: json.title, artist: json.artist, reason: json.reason };
+      const feel: MusicFeel = { bpm: Math.round(song.bpm), energy: song.energy, mode: song.mode };
+      if (song.track) applyTrack(song.track, { reason: song.reason, feel, pickedBy: song.source });
+      else {
+        const url = `https://open.spotify.com/search/${encodeURIComponent(`${song.title} ${song.artist}`)}`;
+        setMusic({ kind: "link", url: "", status: "error", error: "That song could not be found in the catalogue — try again or search.", reason: song.reason, spotifyUrl: url, preview: null, feel });
+        return null;
+      }
+      return { title: song.title, artist: song.artist, reason: song.reason };
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not pick a song");
       return null;
     } finally {
       setPicking(false);
     }
-  }, [text, wish]);
-
-  // Nimbus chat actions: "use this title" and "pick a song" act on this form.
-  useEffect(() => {
-    const w = window as unknown as { __feltComposer?: boolean };
-    w.__feltComposer = true;
-    const useTitle = (e: Event) => setTitle((e as CustomEvent<string>).detail.slice(0, 80));
-    const pick = async () => {
-      const song = await pickSong();
-      window.dispatchEvent(new CustomEvent("felt:song-picked", { detail: song }));
-      if (song) document.getElementById("song-of-the-day")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    };
-    window.addEventListener("felt:use-title", useTitle);
-    window.addEventListener("felt:pick-song", pick);
-    return () => {
-      w.__feltComposer = false;
-      window.removeEventListener("felt:use-title", useTitle);
-      window.removeEventListener("felt:pick-song", pick);
-    };
-  }, [pickSong]);
+  }, [text, wish, picked, applyTrack]);
 
   // "Choose for me": pick once the day has enough words and no song is set yet.
   useEffect(() => {
-    if (!autoMusic || picking || (music && music.status === "ready") || text.trim().length < 60) return;
+    if (!autoMusic || picking || (music && music.status === "ready") || (music?.kind === "link" && music.reason) || text.trim().length < 60) return;
     const t = setTimeout(pickSong, 1500);
     return () => clearTimeout(t);
   }, [autoMusic, picking, music, text, pickSong]);
@@ -147,10 +158,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
     if (text.trim().length < 12) return setError("Write a little about the day first.");
     setNaming(true);
     try {
-      const res = await fetch("/api/ai/title", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
-      const json = await res.json();
-      if (res.ok) setTitle(json.title);
-      else setError(json.error);
+      setTitle((await aiTitle(text)).title);
     } finally {
       setNaming(false);
     }
@@ -235,6 +243,8 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
     setError(null);
     if (!canDevelop || !music) return;
     try {
+      // An empty title is named on the server (by Claude when configured, otherwise from the words).
+      const finalTitle: string | null = title.trim() || null;
       const total = photos.filter((p) => !p.media).length + (music.kind === "file" && !music.media ? 1 : 0) + (narration && !narration.media ? 1 : 0);
       let done = 0;
       const step = (label: string) => setPhase({ step: label, progress: total ? done / (total + 1) : 0.1 });
@@ -263,7 +273,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
         }
         musicBody = { kind: "file", media: { key: media.key, contentType: media.contentType, size: media.size }, name: music.name, analysis: music.analysis };
       } else {
-        musicBody = { kind: "link", url: music.preview?.url ?? music.url, title: music.preview?.title ?? null, artist: music.preview?.artist ?? null, feel: music.feel.bpm || music.feel.mode !== "unknown" ? music.feel : null };
+        musicBody = { kind: "link", url: music.preview?.url ?? music.url, title: music.preview?.title ?? null, artist: music.preview?.artist ?? null, feel: music.feel.bpm || music.feel.mode !== "unknown" ? music.feel : null, analysis: music.analysis ?? null };
       }
 
       let narrationBody: unknown = null;
@@ -284,7 +294,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
         body: JSON.stringify({
           day,
           text,
-          title: title.trim() || null,
+          title: finalTitle,
           photos: uploaded.map((u) => ({ media: { key: u.media.key, contentType: u.media.contentType, size: u.media.size }, analysis: u.analysis })),
           music: musicBody,
           narration: narrationBody,
@@ -326,6 +336,7 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
             aria-label="What happened today, and how did it feel?"
             maxLength={8000}
           />
+          <VoiceInput onText={(said) => setText((t) => (t.trim() ? `${t.trimEnd()} ${said}` : said).slice(0, 8000))} />
           <div className={s.readingRow}>
             <span className={s.faceTag} title={face.reason}>
               <i style={{ fontFamily: face.family }}>Aa</i>
@@ -386,9 +397,10 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
             <h2>The song of the day</h2>
           </header>
           <div className="segmented" role="group" aria-label="Music source">
-            <button type="button" aria-pressed={musicTab === "ai"} onClick={() => setMusicTab("ai")}>✦ AI pick</button>
+            <button type="button" aria-pressed={musicTab === "ai"} onClick={() => setMusicTab("ai")}>✦ Pick for me</button>
+            <button type="button" aria-pressed={musicTab === "spotify"} onClick={() => setMusicTab("spotify")}>Search songs</button>
             <button type="button" aria-pressed={musicTab === "file"} onClick={() => setMusicTab("file")}>Audio file</button>
-            <button type="button" aria-pressed={musicTab === "link"} onClick={() => { setMusicTab("link"); if (music?.kind !== "link" || music.reason) setMusic({ kind: "link", url: "", preview: null, status: "idle", feel: { bpm: null, energy: 0.5, mode: "unknown" } }); }}>
+            <button type="button" aria-pressed={musicTab === "link"} onClick={() => { setMusicTab("link"); if (music?.kind !== "link" || music.reason || music.trackId) setMusic({ kind: "link", url: "", preview: null, status: "idle", feel: { bpm: null, energy: 0.5, mode: "unknown" } }); }}>
               Music link
             </button>
           </div>
@@ -398,19 +410,25 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
               <input className="input" value={wish} maxLength={300} onChange={(e) => setWish(e.target.value)} placeholder="Describe the music you want — e.g. “calm piano for a rainy evening” (optional)" aria-label="Describe the music you want" />
               <div className={s.aiRow}>
                 <button type="button" className="btn btn-primary btn-small" onClick={pickSong} disabled={picking}>
-                  {picking ? "Listening to your day…" : music?.kind === "link" && music.reason ? "Pick another" : "Let AI choose"}
+                  {picking ? "Listening to your day…" : music?.kind === "link" && music.reason ? "Pick another" : aiReady ? "Let AI choose" : "Pick from my mood"}
                 </button>
                 <label className={s.auto}>
                   <input type="checkbox" checked={autoMusic} onChange={(e) => setAutoMusic(e.target.checked)} /> choose automatically for me
                 </label>
               </div>
-              {music?.kind === "link" && music.reason && music.preview && (
-                <div className={s.linkCard}>
-                  <p className={s.songName}>{music.preview.title} — {music.preview.artist}</p>
-                  <p className={s.fine}>{music.reason}</p>
-                  <p className={s.stats}><span>{music.feel.bpm} bpm</span><span>{music.feel.mode === "major" ? "bright" : "shadowed"}</span><span>energy {Math.round(music.feel.energy * 100)}%</span></p>
-                  <a className={s.fine} href={music.url} target="_blank" rel="noreferrer">Listen ↗</a>
-                </div>
+              {music?.kind === "link" && music.reason && music.status === "error" && <p className="notice error">{music.error}</p>}
+              {music?.kind === "link" && music.reason && music.preview && <TrackCard music={music} />}
+            </div>
+          )}
+
+          {musicTab === "spotify" && (
+            <div className={s.musicPane}>
+              <SongSearch onPick={(tr) => applyTrack(tr)} selectedId={music?.kind === "link" ? music.trackId : null} />
+              {music?.kind === "link" && music.trackId && !music.reason && music.preview && (
+                <>
+                  <TrackCard music={music} />
+                  {!music.analysis && !music.measuring && <FeelControls feel={music.feel} onChange={(feel) => setMusic({ ...music, feel })} />}
+                </>
               )}
             </div>
           )}
@@ -505,10 +523,10 @@ export function Composer({ config, initial, draft }: { config: AppConfig; initia
               <span className="meta">Title</span>
               <button type="button" className={s.suggest} onClick={suggestTitle} disabled={naming}>{naming ? "naming…" : "✦ suggest"}</button>
             </span>
-            <input className="input" value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} placeholder={editing && initial ? initial.title : "Leave empty — AI will name it for you"} />
+            <input className="input" value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} placeholder={editing && initial ? initial.title : aiReady ? "Leave empty — AI will name it for you" : "Leave empty — Felt names it from your words"} />
           </label>
 
-          <p className={s.fine}>Photographs and music are analysed in your browser. If AI is switched on for this diary, your words are sent to an AI model to name the day, pick a song and chat.</p>
+          <p className={s.fine}>Photographs and music are analysed in your browser. When AI is switched on, the text you write is sent to an AI service to name the day, describe its atmosphere and suggest songs. Song searches only send the search words to a music catalogue.</p>
 
           {!config.persistent && <p className="notice">Storage on this deployment is temporary. Connect a Vercel Blob store to keep memories.</p>}
           {error && <p className="notice error" role="alert">{error}</p>}
@@ -659,6 +677,25 @@ function Darkroom({ step, progress, photos }: { step: string; progress: number; 
       <p className={s.darkStep}>{step}</p>
       <div className={s.darkBar}><i style={{ width: `${Math.round(progress * 100)}%` }} /></div>
       <p className="meta">Developing your memory</p>
+    </div>
+  );
+}
+
+function TrackCard({ music }: { music: LinkMusic }) {
+  const p = music.preview!;
+  return (
+    <div className={s.linkCard}>
+      {p.embedUrl && <iframe src={p.embedUrl} title="Song preview" className={s.embed} allow="autoplay; encrypted-media; clipboard-write" loading="lazy" />}
+      <p className={s.songName}>{[p.title, p.artist].filter(Boolean).join(" — ")}</p>
+      {music.reason && <p className={s.fine}>{music.pickedBy === "ai" ? "Chosen by AI: " : "Chosen from the mood of your words: "}{music.reason}</p>}
+      {music.measuring ? (
+        <p className={s.fine}>Listening to the 30-second preview — measuring tempo, key and energy…</p>
+      ) : music.analysis ? (
+        <p className={s.stats}><span>{music.analysis.bpm} bpm</span><span>{music.analysis.key}</span><span>energy {Math.round(music.analysis.energy * 100)}%</span><span>measured from preview</span></p>
+      ) : music.reason && music.feel.bpm ? (
+        <p className={s.stats}><span>~{music.feel.bpm} bpm</span><span>{music.feel.mode === "major" ? "bright" : "shadowed"}</span><span>energy {Math.round(music.feel.energy * 100)}%</span><span>estimated</span></p>
+      ) : null}
+      {music.spotifyUrl && <a className={s.fine} href={music.spotifyUrl} target="_blank" rel="noreferrer">Open in Spotify ↗</a>}
     </div>
   );
 }

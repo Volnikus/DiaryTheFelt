@@ -9,6 +9,7 @@ import s from "./SiteHeader.module.css";
 const LINKS = [
   { href: "/", label: "Home" },
   { href: "/archive", label: "Archive" },
+  { href: "/year", label: "Year" },
 ];
 
 export function SiteHeader() {

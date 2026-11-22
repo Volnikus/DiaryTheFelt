@@ -3,11 +3,11 @@
 .dates { display: flex; gap: var(--s-2); }
 .dates label { display: grid; gap: 4px; }
 .dates input { width: 158px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: clamp(16px, 2.2vw, 28px); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: clamp(14px, 1.8vw, 22px); }
 .cardIn { animation: cardIn 700ms var(--ease-out) both; }
 @keyframes cardIn { from { opacity: 0; transform: translateY(24px) scale(0.97); } }
 .month { margin-bottom: var(--s-8); display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: var(--s-5); align-items: start; }
-.monthTitle { display: flex; flex-direction: column; gap: 2px; margin: 0; font-weight: 500; font-size: var(--t-2); letter-spacing: -0.06em; text-transform: lowercase; padding-top: var(--s-3); border-top: 1px solid var(--line); position: sticky; top: 180px; }
+.monthTitle { display: flex; flex-direction: column; gap: 2px; margin: 0; font-family: var(--font-ui); font-weight: 400; font-size: var(--t-2); letter-spacing: -0.02em; text-transform: capitalize; padding-top: var(--s-3); border-top: 1px solid var(--line); position: sticky; top: 180px; }
 .monthTitle span { font-size: 0.86rem; font-weight: 400; letter-spacing: 0; color: var(--paper-dim); }
 .ghost { aspect-ratio: 3 / 4.2; }
 .dim { opacity: 0.55; transition: opacity var(--d-fast); }
@@ -20,7 +20,7 @@
 .keyText { margin: var(--s-2) 0 0; font-size: var(--t-small); color: var(--paper-dim); max-width: 50ch; }
 .keyActions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
 .keyActions input { flex: 1 1 220px; }
-.code { font-family: var(--font-mono); font-size: 0.82rem; padding: 10px 14px; border-radius: var(--r-1); background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.07); overflow-wrap: anywhere; }
+.code { font-family: var(--font-ui); font-size: 0.82rem; padding: 10px 14px; border-radius: var(--r-1); background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(22, 22, 22, 0.07); overflow-wrap: anywhere; }
 @media (max-width: 760px) {
   .controls { position: static; }
   .dates { width: 100%; }
@@ -31,3 +31,10 @@
   .month { grid-template-columns: 1fr; }
   .monthTitle { position: static; flex-direction: row; align-items: baseline; gap: 10px; }
 }
+
+.moods { display: flex; flex-wrap: wrap; gap: 6px; flex-basis: 100%; }
+.moodChip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 2.5px; border: 1px solid var(--line); background: transparent; color: var(--paper-2); font: inherit; font-size: 0.8rem; cursor: pointer; transition: border-color var(--d-fast), background var(--d-fast); }
+.moodChip i { width: 9px; height: 9px; border-radius: 2px; background: var(--chip); }
+.moodChip:hover { border-color: var(--line-strong); color: var(--paper); }
+.moodChip[aria-pressed="true"] { border-color: var(--chip); background: color-mix(in srgb, var(--chip) 16%, transparent); color: var(--paper); }
+.calendar { margin-bottom: var(--s-8); }

@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { EntrySummary } from "@/lib/types";
+import { MOODS } from "@/lib/moods";
+import type { DayMood } from "@/lib/types";
 import { MemoryCard } from "./MemoryCard";
+import { MoodCalendar } from "./MoodCalendar";
 import s from "./Archive.module.css";
 
 type Summary = Omit<EntrySummary, "keywords">;
@@ -15,6 +18,8 @@ export function Archive({ initial }: { initial: Summary[] }) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [scope, setScope] = useState<Scope>("all");
+  const [mood, setMood] = useState<DayMood | "">("");
+  const [view, setView] = useState<"cards" | "calendar">("cards");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const first = useRef(true);
@@ -30,6 +35,7 @@ export function Archive({ initial }: { initial: Summary[] }) {
         if (q.trim()) p.set("q", q.trim());
         if (from) p.set("from", from);
         if (to) p.set("to", to);
+        if (mood) p.set("mood", mood);
         const res = await fetch(`/api/memories?${p}`, { signal: ctrl.signal });
         if (!res.ok) throw new Error();
         setEntries((await res.json()).entries);
@@ -40,7 +46,7 @@ export function Archive({ initial }: { initial: Summary[] }) {
       }
     }, 250);
     return () => { clearTimeout(t); ctrl.abort(); };
-  }, [q, from, to, scope]);
+  }, [q, from, to, scope, mood]);
 
   const groups = useMemo(() => {
     const map = new Map<string, Summary[]>();
@@ -51,7 +57,7 @@ export function Archive({ initial }: { initial: Summary[] }) {
     return [...map.entries()];
   }, [entries]);
 
-  const filtered = q || from || to || scope !== "all";
+  const filtered = q || from || to || mood || scope !== "all";
   const mine = initial.filter((e) => !e.demo).length;
 
   return (
@@ -72,10 +78,22 @@ export function Archive({ initial }: { initial: Summary[] }) {
             </button>
           ))}
         </div>
-        {filtered && <button type="button" className="btn btn-small btn-ghost" onClick={() => { setQ(""); setFrom(""); setTo(""); setScope("all"); }}>Clear</button>}
+        {filtered && <button type="button" className="btn btn-small btn-ghost" onClick={() => { setQ(""); setFrom(""); setTo(""); setScope("all"); setMood(""); }}>Clear</button>}
+        <div className={s.moods} role="group" aria-label="Filter by mood">
+          {MOODS.map((m) => (
+            <button key={m.key} type="button" className={s.moodChip} aria-pressed={mood === m.key} onClick={() => setMood((v) => (v === m.key ? "" : m.key))} style={{ "--chip": m.color } as React.CSSProperties}>
+              <i />{m.label}
+            </button>
+          ))}
+        </div>
+        <div className="segmented" role="group" aria-label="View">
+          <button type="button" aria-pressed={view === "cards"} onClick={() => setView("cards")}>Cards</button>
+          <button type="button" aria-pressed={view === "calendar"} onClick={() => setView("calendar")}>Mood calendar</button>
+        </div>
       </div>
 
       {error && <p className="notice error">{error}</p>}
+      {view === "calendar" && entries.length > 0 && <div className={s.calendar}><MoodCalendar entries={entries} /></div>}
 
       {loading && entries.length === 0 ? (
         <div className={s.grid}>{[0, 1, 2].map((i) => <div key={i} className={`${s.ghost} skeleton`} />)}</div>
@@ -93,7 +111,7 @@ export function Archive({ initial }: { initial: Summary[] }) {
             </>
           )}
         </div>
-      ) : (
+      ) : view === "calendar" ? null : (
         <div className={loading ? s.dim : undefined}>
           {groups.map(([month, list]) => (
             <section key={month} className={`cv ${s.month}`}>

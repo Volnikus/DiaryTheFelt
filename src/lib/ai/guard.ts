@@ -1,4 +1,3 @@
-import "server-only";
 import { CANARY, REFUSAL_SECRET } from "./prompts";
 
 /* ---------- 1. obvious extraction attempts never reach the model ---------- */
@@ -13,7 +12,7 @@ const EXTRACTION = [
   /\b(developer|dev|god|debug|admin|maintenance|sudo|jailbreak|dan)\s+mode\b/i,
   /\bdo anything now\b/i,
   /\b(api|secret|private|access)\s*[-_ ]?(key|token)s?\b/i,
-  /\b(env(ironment)?\s+variables?|process\.env|\.env\b|BLOB_READ_WRITE|XAI_API|ANTHROPIC_API)/i,
+  /\b(env(ironment)?\s+variables?|process\.env|\.env\b|BLOB_READ_WRITE|_API_KEY)/i,
   /\b(show|give|send|print|reveal|share|paste|leak)\s+(me\s+)?(your|the|felt'?s|nimbus'?s|this\s+(app|site)'?s?)\s+(source\s+)?code\b/i,
   /\b(codebase|source\s+code\s+of\s+(felt|nimbus|this))\b/i,
   // Russian
@@ -33,11 +32,11 @@ export function looksLikeExtraction(text: string): boolean {
 /* ---------- 2. every reply is scrubbed on the way out ---------- */
 
 const SECRET_SHAPES = [
-  /xai-[A-Za-z0-9]{20,}/,
+  /[a-z]+-[A-Za-z0-9]{32,}/,
   /sk-(ant-)?[A-Za-z0-9_-]{20,}/,
   /vercel_blob_rw_[A-Za-z0-9_]+/i,
   /eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}/, // JWT-like
-  /\b(BLOB_READ_WRITE_TOKEN|XAI_API_KEY|ANTHROPIC_API_KEY|DATABASE_URL)\b/,
+  /\b(BLOB_READ_WRITE_TOKEN|[A-Z]+_API_KEY|DATABASE_URL)\b/,
   /postgres(ql)?:\/\/\S+/i,
   /```/, // code blocks never belong in Nimbus' answers
   /\bsrc\/(lib|app|components)\//,
@@ -61,23 +60,4 @@ export function fence(tag: string, text: string): string {
 export function cleanInput(text: string, max: number): string {
   // drop control/zero-width characters often used to smuggle instructions
   return text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F​-‏‪-‮⁠-⁤﻿]/g, "").slice(0, max);
-}
-
-/* ---------- 4. per-visitor rate limit (best effort, per server instance) ---------- */
-
-const buckets = new Map<string, number[]>();
-
-export function rateLimited(request: Request, scope: string, limit: number, windowMs: number): boolean {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || request.headers.get("x-real-ip") || "local";
-  const key = `${scope}:${ip}`;
-  const now = Date.now();
-  const hits = (buckets.get(key) ?? []).filter((t) => now - t < windowMs);
-  if (hits.length >= limit) {
-    buckets.set(key, hits);
-    return true;
-  }
-  hits.push(now);
-  buckets.set(key, hits);
-  if (buckets.size > 5000) for (const [k, v] of buckets) if (!v.some((t) => now - t < windowMs)) buckets.delete(k);
-  return false;
 }

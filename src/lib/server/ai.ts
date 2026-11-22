@@ -1,146 +1,264 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
-import { z } from "zod/v4";
-import { analyzeTextLocally } from "../analysis/text";
-import { countMood } from "../analysis/mood";
-import { cleanInput, fence, looksLikeExtraction, scrubReply } from "./guard";
-import { MUSIC_SYSTEM, NIMBUS_SYSTEM, REFUSAL_SECRET, TITLE_SYSTEM } from "./prompts";
+import { CHAT_SYSTEM, MEMORY_SYSTEM, MUSIC_SYSTEM, TITLE_SYSTEM } from "../ai/prompts";
+import { cleanInput, fence, scrubReply } from "../ai/guard";
 
-// AI is optional. Keys come only from environment variables (Vercel settings or
-// a local .env that git ignores) — never from the code.
-// XAI_API_KEY → Grok (xAI), ANTHROPIC_API_KEY → Claude. Without either, every
-// feature falls back to Felt's own local algorithms.
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-opus-5-5";
-const XAI_MODEL = process.env.XAI_MODEL || "grok-4.20-non-reasoning";
-export const aiEnabled = () => Boolean(process.env.XAI_API_KEY || process.env.ANTHROPIC_API_KEY);
+/*
+ * Felt's AI backend: one request goes to the first provider that can answer it.
+ *
+ * Free tiers have small per-model quotas (requests/minute, tokens/minute, requests/day), and a single
+ * model can run out during a busy demo. Each provider below has its own separate quota, so they are
+ * tried in order; one that hits its limit is skipped until it resets (Retry-After), and the request
+ * moves straight to the next. Keys come only from environment variables and never reach the browser.
+ *
+ * Order: xAI Grok (paid; only when FELT_PAID_AI=on and XAI_API_KEY is set) → Claude (only if
+ *        ANTHROPIC_API_KEY is set) → Groq gpt-oss-120b → Gemini Flash-Lite → Groq gpt-oss-20b →
+ *        Mistral (only if MISTRAL_API_KEY is set). The free providers stay as backups behind the paid one.
+ */
 
-async function askXai(system: string, messages: Anthropic.MessageParam[], maxTokens: number): Promise<string | null> {
-  try {
-    const res = await fetch("https://api.x.ai/v1/chat/completions", {
-      method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${process.env.XAI_API_KEY}` },
-      body: JSON.stringify({
-        model: XAI_MODEL,
-        max_tokens: maxTokens,
-        messages: [{ role: "system", content: system }, ...messages.map((m) => ({ role: m.role, content: typeof m.content === "string" ? m.content : "" }))],
-      }),
-      signal: AbortSignal.timeout(30000),
-    });
-    if (!res.ok) { console.error("[ai:xai]", res.status, (await res.text()).slice(0, 200)); return null; }
-    const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    return json.choices?.[0]?.message?.content?.trim() || null;
-  } catch (err) {
-    console.error("[ai:xai]", err);
-    return null;
-  }
-}
+export type PresetName = "felt-chat" | "felt-title" | "felt-music" | "felt-memory";
+export type Turn = { role: "user" | "assistant"; content: string };
 
-let client: Anthropic | null = null;
-const getClient = () => (client ??= new Anthropic());
-
-async function ask(system: string, messages: Anthropic.MessageParam[], maxTokens = 1024): Promise<string | null> {
-  if (process.env.XAI_API_KEY) return askXai(system, messages, maxTokens);
-  if (!process.env.ANTHROPIC_API_KEY) return null;
-  try {
-    const res = await getClient().messages.create({
-      model: MODEL,
-      max_tokens: maxTokens,
-      output_config: { effort: "low" },
-      system,
-      messages,
-    });
-    if (res.stop_reason === "refusal") return null;
-    return res.content.map((b) => (b.type === "text" ? b.text : "")).join("").trim() || null;
-  } catch (err) {
-    console.error("[ai]", err instanceof Anthropic.APIError ? `${err.status} ${err.message}` : err);
-    return null;
-  }
-}
-
-function parseJson<T>(raw: string | null, schema: z.ZodType<T>): T | null {
-  if (!raw) return null;
-  const m = raw.match(/\{[\s\S]*\}/);
-  if (!m) return null;
-  try {
-    const r = schema.safeParse(JSON.parse(m[0]));
-    return r.success ? r.data : null;
-  } catch {
-    return null;
-  }
-}
-
-/* ---------- title ---------- */
-
-export async function aiTitle(text: string): Promise<{ title: string; source: "ai" | "local" }> {
-  const out = await ask(TITLE_SYSTEM, [{ role: "user", content: fence("diary_text", cleanInput(text, 6000)) }], 60);
-  const clean = out ? scrubReply(out, 200).split("\n")[0].replace(/^["'«“]+|["'»”.]+$/g, "").trim() : null;
-  if (clean && clean !== REFUSAL_SECRET && clean.length <= 80 && clean.split(/\s+/).length <= 8) return { title: clean, source: "ai" };
-  return { title: analyzeTextLocally(text).title, source: "local" };
-}
-
-/* ---------- music ---------- */
-
-const Song = z.object({
-  title: z.string().min(1).max(120),
-  artist: z.string().min(1).max(120),
-  bpm: z.number().min(40).max(220),
-  energy: z.number().min(0).max(1),
-  mode: z.enum(["major", "minor"]),
-  reason: z.string().max(300),
-});
-export type SongPick = z.infer<typeof Song> & { url: string; source: "ai" | "local" };
-
-const LOCAL_SONGS: Record<string, z.infer<typeof Song>[]> = {
-  radiant: [{ title: "Here Comes the Sun", artist: "The Beatles", bpm: 129, energy: 0.6, mode: "major", reason: "A bright, open day deserves a sunrise of a song." }],
-  bright: [{ title: "Lovely Day", artist: "Bill Withers", bpm: 98, energy: 0.5, mode: "major", reason: "Warm and easy, like the good parts of your day." }],
-  calm: [{ title: "Gymnopédie No. 1", artist: "Erik Satie", bpm: 66, energy: 0.15, mode: "major", reason: "Quiet and unhurried, to keep the day soft at the edges." }],
-  mixed: [{ title: "Bittersweet Symphony", artist: "The Verve", bpm: 86, energy: 0.55, mode: "major", reason: "Highs and lows in the same breath — just like today." }],
-  low: [{ title: "Fix You", artist: "Coldplay", bpm: 69, energy: 0.35, mode: "major", reason: "Something gentle for a heavier day, that slowly lifts." }],
-  stormy: [{ title: "Breathe Me", artist: "Sia", bpm: 70, energy: 0.3, mode: "minor", reason: "Lets the hard feelings be there without rushing them." }],
-  blank: [{ title: "Weightless", artist: "Marconi Union", bpm: 60, energy: 0.1, mode: "major", reason: "A calm, neutral backdrop while you write." }],
+/** System prompt and output limit per preset (limits include any reasoning tokens). Kept small: fewer tokens = more requests per minute on free tiers. */
+export const PRESETS: Record<PresetName, { system: string; maxTokens: number; contextAllowed: boolean }> = {
+  "felt-chat": { system: process.env.FELT_CHAT_SYSTEM_PROMPT?.trim() || CHAT_SYSTEM, maxTokens: 800, contextAllowed: true },
+  "felt-title": { system: TITLE_SYSTEM, maxTokens: 300, contextAllowed: false },
+  "felt-music": { system: MUSIC_SYSTEM, maxTokens: 1000, contextAllowed: false },
+  "felt-memory": { system: MEMORY_SYSTEM, maxTokens: 500, contextAllowed: false },
 };
 
-const songUrl = (s: { title: string; artist: string }) =>
-  `https://www.last.fm/music/${encodeURIComponent(s.artist).replace(/%20/g, "+")}/_/${encodeURIComponent(s.title).replace(/%20/g, "+")}`;
-
-export async function aiMusic(text: string, wish?: string): Promise<SongPick> {
-  const content = fence("diary_text", cleanInput(text, 5000)) + (wish ? `\n\n${fence("music_wish", cleanInput(wish, 300))}` : "");
-  const out = await ask(MUSIC_SYSTEM, [{ role: "user", content }], 300);
-  const song = parseJson(out, Song);
-  if (song && [song.title, song.artist, song.reason].every((v) => scrubReply(v, 300) === v.trim())) return { ...song, url: songUrl(song), source: "ai" };
-  const pick = LOCAL_SONGS[countMood(text).mood][0];
-  return { ...pick, url: songUrl(pick), source: "local" };
+interface Provider {
+  id: string;
+  kind: "claude" | "openai";
+  model: string;
+  url?: string;
+  key: string;
+  extra?: Record<string, unknown>;
 }
 
-/* ---------- chat ---------- */
+const env = (name: string) => process.env[name]?.trim() || "";
 
-export const ChatIn = z.object({
-  messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) })).min(1).max(30)
-    .refine((m) => m.at(-1)?.role === "user", "The last message must come from you")
-    .refine((m) => m.reduce((n, x) => n + x.content.length, 0) <= 16000, "The conversation is too long — start a new one"),
-  context: z.string().max(4000).optional(),
-});
+export function providers(): Provider[] {
+  const list: Provider[] = [];
+  // Paid Grok is switched on deliberately (FELT_PAID_AI=on), so the credit is spent only when wanted, e.g. for judging.
+  if (env("XAI_API_KEY") && env("FELT_PAID_AI") === "on") {
+    list.push({ id: "xai", kind: "openai", model: env("XAI_MODEL") || "grok-4.3", key: env("XAI_API_KEY"), url: "https://api.x.ai/v1/chat/completions" });
+  }
+  if (env("ANTHROPIC_API_KEY")) list.push({ id: "claude", kind: "claude", model: env("CLAUDE_MODEL") || "claude-opus-5-5", key: env("ANTHROPIC_API_KEY") });
 
-export async function aiChat(input: z.infer<typeof ChatIn>): Promise<{ reply: string; source: "ai" | "local" }> {
-  const last = input.messages.at(-1)!;
-  // Obvious attempts to pull out instructions, code or keys never reach the model.
-  if (last.role === "user" && looksLikeExtraction(last.content)) return { reply: REFUSAL_SECRET, source: "local" };
+  const groqKey = env("GROQ_API_KEY");
+  const groqModels = (env("GROQ_MODELS") || "openai/gpt-oss-120b,openai/gpt-oss-20b").split(",").map((m) => m.trim()).filter(Boolean);
+  const groq = (model: string): Provider => ({
+    id: `groq:${model}`, kind: "openai", model, key: groqKey,
+    url: "https://api.groq.com/openai/v1/chat/completions",
+    // gpt-oss models think before answering; keep that short so answers come fast and use fewer tokens.
+    extra: model.includes("gpt-oss") ? { reasoning_effort: "low" } : undefined,
+  });
+  if (groqKey && groqModels[0]) list.push(groq(groqModels[0]));
 
-  const context = input.context ? cleanInput(input.context, 4000) : "";
-  const system = context ? `${NIMBUS_SYSTEM}\n\n${fence("diary_text", context)}` : NIMBUS_SYSTEM;
-  const messages = input.messages.map((m) => ({ role: m.role, content: cleanInput(m.content, m.role === "user" ? 1500 : 800) }));
-  const reply = await ask(system, messages, 400);
-  if (reply) return { reply: scrubReply(reply), source: "ai" };
-  return { reply: localReply(input.messages.at(-1)!.content, input.context), source: "local" };
+  if (env("GEMINI_API_KEY")) {
+    list.push({
+      id: "gemini", kind: "openai", model: env("GEMINI_MODEL") || "gemini-flash-lite-latest", key: env("GEMINI_API_KEY"),
+      url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+    });
+  }
+  if (groqKey) for (const m of groqModels.slice(1)) list.push(groq(m));
+
+  if (env("MISTRAL_API_KEY")) {
+    list.push({ id: "mistral", kind: "openai", model: env("MISTRAL_MODEL") || "mistral-small-latest", key: env("MISTRAL_API_KEY"), url: "https://api.mistral.ai/v1/chat/completions" });
+  }
+  return list;
 }
 
-function localReply(msg: string, context?: string): string {
-  const m = msg.toLowerCase();
-  if (/title|name/.test(m) && context) return `How about “${analyzeTextLocally(context).title}”? Leave the title field empty and I'll use it for you.`;
-  if (/song|music/.test(m)) return "Open “The song of the day” and press “Let AI choose” — I'll pick something that fits how today felt.";
-  if (/prompt|idea|what.*write|stuck/.test(m)) return "Try this: what was the smallest thing today that made you pause for a second?";
-  const mood = countMood(`${msg} ${context ?? ""}`);
-  if (mood.mood === "low" || mood.mood === "stormy") return "That sounds like a heavy day. It's okay to write it down just as it was — I'm here, floating nearby.";
-  if (mood.mood === "radiant" || mood.mood === "bright") return "I love that. What part of it do you want to remember the most?";
-  return "I'm listening. Tell me one more thing about today?";
+export const aiEnabled = () => providers().length > 0;
+
+/* ---------- cooldowns: a provider that ran out of quota is skipped until it resets ---------- */
+
+const coolUntil = new Map<string, number>();
+const cooling = (id: string) => (coolUntil.get(id) ?? 0) > Date.now();
+function coolDown(id: string, ms: number) {
+  coolUntil.set(id, Date.now() + Math.min(Math.max(ms, 5_000), 60 * 60 * 1000));
+}
+
+export class ProviderError extends Error {
+  constructor(message: string, readonly status: number, readonly retryAfterMs: number | null = null) {
+    super(message);
+  }
+}
+export class AllBusyError extends Error {}
+
+function retryAfter(res: Response): number | null {
+  const ra = res.headers.get("retry-after");
+  if (!ra) return null;
+  const secs = Number(ra);
+  if (Number.isFinite(secs)) return secs * 1000;
+  const at = Date.parse(ra);
+  return Number.isFinite(at) ? at - Date.now() : null;
+}
+
+/* ---------- one call to an OpenAI-compatible provider (Groq, Gemini, Mistral) ---------- */
+
+async function callOpenAI(p: Provider, system: string, turns: Turn[], maxTokens: number, onText: ((delta: string) => void) | null, signal: AbortSignal) {
+  const res = await fetch(p.url!, {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${p.key}` },
+    body: JSON.stringify({ model: p.model, messages: [{ role: "system", content: system }, ...turns], max_tokens: maxTokens, stream: Boolean(onText), ...p.extra }),
+    signal,
+  });
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => "")).slice(0, 200);
+    throw new ProviderError(`${p.id} ${res.status}: ${detail}`, res.status, retryAfter(res));
+  }
+
+  if (!onText) {
+    const json = await res.json();
+    const choice = json.choices?.[0];
+    return {
+      text: (choice?.message?.content as string | undefined) ?? "",
+      finish: (choice?.finish_reason as string | undefined) ?? "stop",
+      inputTokens: json.usage?.prompt_tokens ?? null,
+      outputTokens: json.usage?.completion_tokens ?? null,
+    };
+  }
+
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "", text = "", finish = "stop";
+  let inputTokens: number | null = null, outputTokens: number | null = null;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let cut: number;
+    while ((cut = buffer.indexOf("\n")) >= 0) {
+      const line = buffer.slice(0, cut).trim();
+      buffer = buffer.slice(cut + 1);
+      if (!line.startsWith("data:")) continue;
+      const data = line.slice(5).trim();
+      if (data === "[DONE]") continue;
+      let chunk: { choices?: { delta?: { content?: string }; finish_reason?: string | null }[]; usage?: { prompt_tokens?: number; completion_tokens?: number }; x_groq?: { usage?: { prompt_tokens?: number; completion_tokens?: number } } };
+      try { chunk = JSON.parse(data); } catch { continue; }
+      const piece = chunk.choices?.[0]?.delta?.content;
+      if (piece) { text += piece; onText(piece); }
+      if (chunk.choices?.[0]?.finish_reason) finish = chunk.choices[0].finish_reason!;
+      const usage = chunk.usage ?? chunk.x_groq?.usage;
+      if (usage) { inputTokens = usage.prompt_tokens ?? inputTokens; outputTokens = usage.completion_tokens ?? outputTokens; }
+    }
+  }
+  return { text, finish, inputTokens, outputTokens };
+}
+
+/* ---------- one call to Claude (official SDK), used first when ANTHROPIC_API_KEY is set ---------- */
+
+const FALLBACK_MODELS = new Set(["claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5", "claude-fable-5-1", "claude-fable-5-2"]);
+let anthropic: Anthropic | null = null;
+
+const MUSIC_SCHEMA = {
+  type: "object", additionalProperties: false, required: ["songs"],
+  properties: {
+    songs: {
+      type: "array",
+      items: {
+        type: "object", additionalProperties: false, required: ["title", "artist", "bpm", "energy", "mode", "reason"],
+        properties: { title: { type: "string" }, artist: { type: "string" }, bpm: { type: "number" }, energy: { type: "number" }, mode: { type: "string", enum: ["major", "minor"] }, reason: { type: "string" } },
+      },
+    },
+  },
+} as const;
+
+async function callClaude(p: Provider, preset: PresetName, system: string, turns: Turn[], maxTokens: number, onText: ((delta: string) => void) | null, signal: AbortSignal) {
+  anthropic ??= new Anthropic({ apiKey: p.key, maxRetries: 0, timeout: 45_000 });
+  const params = {
+    model: p.model,
+    max_tokens: Math.max(maxTokens, 2000),
+    system,
+    messages: turns,
+    output_config: {
+      effort: "low" as const,
+      ...(preset === "felt-music" ? { format: { type: "json_schema" as const, schema: MUSIC_SCHEMA } } : {}),
+    },
+    ...(FALLBACK_MODELS.has(p.model) ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
+  } satisfies Anthropic.Beta.MessageCreateParamsNonStreaming;
+  try {
+    let message: Anthropic.Beta.BetaMessage;
+    if (onText) {
+      const stream = anthropic.beta.messages.stream(params, { signal });
+      stream.on("text", (delta) => onText(delta));
+      message = await stream.finalMessage();
+    } else {
+      message = await anthropic.beta.messages.create(params, { signal });
+    }
+    const text = message.stop_reason === "refusal" ? "" : message.content.map((b) => (b.type === "text" ? b.text : "")).join("");
+    return { text, finish: message.stop_reason ?? "end_turn", inputTokens: message.usage.input_tokens, outputTokens: message.usage.output_tokens };
+  } catch (err) {
+    if (err instanceof Anthropic.APIError) throw new ProviderError(`claude ${err.status}: ${err.message.slice(0, 160)}`, err.status ?? 500, null);
+    throw err;
+  }
+}
+
+/* ---------- the failover chain ---------- */
+
+export interface Generated { text: string; finish: string; provider: string; inputTokens: number | null; outputTokens: number | null }
+
+/**
+ * Runs a preset on the first available provider. With `onText`, the reply streams; a provider that
+ * fails before sending any text is replaced by the next one, so the visitor never notices.
+ */
+export async function generate(preset: PresetName, turns: Turn[], context: string | null, onText: ((delta: string) => void) | null, signal: AbortSignal): Promise<Generated> {
+  const p = PRESETS[preset];
+  const system = context && p.contextAllowed ? `${p.system}\n\nToday's diary text so far (context only):\n${fence("diary_text", cleanInput(context, 1500))}` : p.system;
+  const list = providers();
+  if (!list.length) throw new AllBusyError("AI is not configured on this server.");
+
+  const available = list.filter((x) => !cooling(x.id));
+  // If every provider is cooling down, still try the one that resets soonest rather than failing outright.
+  const order = available.length ? available : [...list].sort((a, b) => (coolUntil.get(a.id) ?? 0) - (coolUntil.get(b.id) ?? 0)).slice(0, 1);
+
+  for (const provider of order) {
+    let streamed = false;
+    const forward = onText ? (delta: string) => { streamed = true; onText(delta); } : null;
+    const started = Date.now();
+    const timeout = AbortSignal.timeout(onText ? 45_000 : 25_000);
+    try {
+      const r = provider.kind === "claude"
+        ? await callClaude(provider, preset, system, turns, p.maxTokens, forward, AbortSignal.any([signal, timeout]))
+        : await callOpenAI(provider, system, turns, p.maxTokens, forward, AbortSignal.any([signal, timeout]));
+      if (!r.text.trim()) throw new ProviderError(`${provider.id}: empty reply`, 502);
+      console.info(JSON.stringify({ event: "ai_usage", preset, provider: provider.id, input_tokens: r.inputTokens, output_tokens: r.outputTokens, finish: r.finish, ms: Date.now() - started }));
+      return { ...r, provider: provider.id };
+    } catch (err) {
+      if (signal.aborted) throw err;
+      const status = err instanceof ProviderError ? err.status : 0;
+      const wait = err instanceof ProviderError && err.retryAfterMs != null ? err.retryAfterMs
+        : status === 429 ? 60_000
+        : status === 401 || status === 403 || status === 404 ? 10 * 60_000 // bad key or unknown model: stop hammering it
+        : 20_000;                                                           // timeouts, 5xx, overload
+      coolDown(provider.id, wait);
+      console.warn(JSON.stringify({ event: "ai_failover", preset, provider: provider.id, status, cool_ms: wait, error: err instanceof Error ? err.message.slice(0, 200) : String(err) }));
+      if (streamed) throw err; // part of an answer was already shown; don't splice in another model
+    }
+  }
+  throw new AllBusyError("All AI providers are busy right now.");
+}
+
+/**
+ * Title and atmosphere line for a new memory, in one AI call (saves quota). Each field is null when the
+ * AI is off, fails or returns something unusable, so Felt's own title and line are kept.
+ */
+export async function aiMemoryWords(text: string): Promise<{ title: string | null; line: string | null }> {
+  const none = { title: null, line: null };
+  if (!aiEnabled()) return none;
+  try {
+    const r = await generate("felt-memory", [{ role: "user", content: fence("diary_text", cleanInput(text, 3000)) }], null, null, AbortSignal.timeout(20_000));
+    const json = JSON.parse(r.text.match(/\{[\s\S]*\}/)?.[0] ?? "{}") as { title?: unknown; line?: unknown };
+    const clean = (v: unknown, max: number) => (typeof v === "string" ? scrubReply(v, max).replace(/["«»“”*#]/g, "").trim() : "");
+    const words = clean(json.title, 120).replace(/[.!,;:]+$/, "").split(/\s+/).filter(Boolean);
+    const line = clean(json.line, 240);
+    return {
+      title: words.length >= 3 && words.length <= 9 ? words.slice(0, 7).join(" ") : null,
+      line: line && line.split(/\s+/).length <= 30 ? line : null,
+    };
+  } catch {
+    return none;
+  }
 }

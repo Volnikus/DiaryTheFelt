@@ -3,7 +3,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import type { MoodCount } from "@/lib/analysis/mood";
 import type { ThemeBlend } from "@/lib/engine/presets";
-import { MoodOrb } from "./MoodOrb";
 import s from "./MoodMeter.module.css";
 
 const LABEL: Record<MoodCount["mood"], string> = {
@@ -13,21 +12,20 @@ const LABEL: Record<MoodCount["mood"], string> = {
 /** Mote counts the good and the hard words as you write; the theme eases in behind. */
 export function MoodMeter({ mood, blend, themed }: { mood: MoodCount; blend: ThemeBlend; themed: boolean }) {
   const recent = mood.hits.slice(-6);
-  const color = themed ? blend.palette.accent : "#FFD83D";
+  
 
   return (
     <div className={s.meter} aria-live="polite">
       <div className={s.head}>
-        <MoodOrb mood={mood} color={color} />
         <div className={s.read}>
           <span className={s.kicker}>today feels</span>
           <AnimatePresence mode="wait" initial={false}>
             <motion.strong
               key={mood.mood}
               className={s.word}
-              initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -8, filter: "blur(6px)" }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
             >
               {LABEL[mood.mood]}

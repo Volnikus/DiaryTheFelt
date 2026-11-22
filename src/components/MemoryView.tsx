@@ -11,6 +11,8 @@ import { GenerativeField } from "./GenerativeField";
 import { Photo } from "./Photo";
 import { Waveform } from "./Waveform";
 import { Explain } from "./Explain";
+import { sharePostcard } from "@/lib/client/postcard";
+import { StoryButton } from "./StoryButton";
 import s from "./Memory.module.css";
 
 type Analyser = { ctx: AudioContext; node: AnalyserNode; buf: Uint8Array<ArrayBuffer> };
@@ -394,7 +396,7 @@ function MusicBlock({ entry, audio }: { entry: Entry; audio: Audio }) {
       <div className={s.linkMeta}>
         <p className={s.songName}>{[m.title, m.artist].filter(Boolean).join(" — ") || "Linked song"}</p>
         <p className={s.musicStats}>
-          <span>{prof.bpm} bpm ({prof.origin === "creator-tapped" ? "tapped" : "assumed"})</span>
+          <span>{prof.bpm} bpm ({prof.origin === "preview-analysis" ? "measured from preview" : prof.origin === "creator-tapped" ? "tapped" : "assumed"})</span>
           {prof.mode !== "unknown" && <span>{prof.mode}</span>}
           {prof.genre && <span>{prof.genre}</span>}
         </p>
@@ -476,6 +478,20 @@ function Actions({ entry, own }: { entry: Entry; own: boolean }) {
   const [title, setTitle] = useState(entry.title);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [card, setCard] = useState<"idle" | "drawing" | "done">("idle");
+
+  const postcard = async () => {
+    setCard("drawing");
+    setError(null);
+    try {
+      await sharePostcard(entry);
+      setCard("done");
+      setTimeout(() => setCard("idle"), 2500);
+    } catch (e) {
+      setCard("idle");
+      setError(e instanceof Error ? e.message : "Could not make the postcard");
+    }
+  };
 
   const rename = async () => {
     setBusy(true);
@@ -502,6 +518,8 @@ function Actions({ entry, own }: { entry: Entry; own: boolean }) {
     <div className={s.actionsInner}>
       <div className={s.actionRow}>
         <Link href="/archive" className="btn btn-small">← Archive</Link>
+        <button className="btn btn-small btn-light" onClick={postcard} disabled={card === "drawing"}>{card === "drawing" ? "Drawing postcard…" : card === "done" ? "Postcard saved ✓" : "Postcard"}</button>
+        <StoryButton make={() => sharePostcard(entry, "story")} />
         <a href={`/api/memories/${entry.id}/folder`} className="btn btn-small" download>Download day folder</a>
         {own && <Link href={`/m/${entry.id}/edit`} className="btn btn-small">Edit &amp; redevelop</Link>}
         {own && <button className="btn btn-small" onClick={() => setRenaming((v) => !v)}>Rename</button>}

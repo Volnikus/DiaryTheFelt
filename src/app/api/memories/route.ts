@@ -17,6 +17,7 @@ export async function GET(request: Request) {
       from: p.get("from") || undefined,
       to: p.get("to") || undefined,
       scope: scope === "mine" || scope === "demo" ? scope : "all",
+      mood: p.get("mood") || undefined,
     });
     return json({ entries: entries.map(({ keywords: _k, ...rest }) => rest) });
   } catch (err) {

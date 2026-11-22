@@ -28,12 +28,7 @@ export function Transform({ entries }: { entries: Entry[] }) {
     <div
       className={s.shell}
       onMouseEnter={() => setPaused(true)}
-      onMouseLeave={(ev) => { setPaused(false); ev.currentTarget.style.setProperty("--rx", "0deg"); ev.currentTarget.style.setProperty("--ry", "0deg"); }}
-      onPointerMove={(ev) => {
-        const r = ev.currentTarget.getBoundingClientRect();
-        ev.currentTarget.style.setProperty("--ry", `${((ev.clientX - r.left) / r.width - 0.5) * 10}deg`);
-        ev.currentTarget.style.setProperty("--rx", `${-((ev.clientY - r.top) / r.height - 0.5) * 8}deg`);
-      }}
+      onMouseLeave={() => setPaused(false)}
     >
       <div key={e.id} className={s.scene}>
         <div className={s.inputs}>

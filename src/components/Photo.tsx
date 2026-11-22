@@ -14,7 +14,7 @@ interface Props {
 
 export function Photo({ src, alt, width, height, sizes, className, style, priority }: Props) {
   if (src.startsWith("/demo/")) {
-    return <Image src={src} alt={alt} width={width} height={height} sizes={sizes} className={className} style={style} priority={priority} />;
+    return <Image src={src} alt={alt} width={width} height={height} sizes={sizes} className={className} style={style} priority={priority} quality={90} />;
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element

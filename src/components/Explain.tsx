@@ -86,7 +86,7 @@ export function Explain({ entry }: { entry: Entry }) {
         <p>
           Entry read by Felt’s lexicon interpreter
           {" · "}photographs analysed pixel by pixel{" · "}
-          {entry.musicProfile.origin === "audio-analysis" ? "music analysed from the audio signal" : entry.musicProfile.origin === "creator-tapped" ? "tempo tapped by the author" : "music character assumed from the entry"}
+          {entry.musicProfile.origin === "audio-analysis" ? "music analysed from the audio signal" : entry.musicProfile.origin === "preview-analysis" ? "music analysed from the song’s official preview" : entry.musicProfile.origin === "creator-tapped" ? "tempo tapped by the author" : "music character assumed from the entry"}
           {" · "}{entry.generation.engine}
         </p>
         {entry.generation.notes.map((n, i) => <p key={i}>{n}</p>)}

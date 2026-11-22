@@ -1,4 +1,1 @@
 .logo { display: block; flex: none; }
-.logo .face { transform-origin: 50% 60%; animation: bob 4s ease-in-out infinite; }
-@keyframes bob { 50% { transform: translateY(-1.5px); } }
-@media (prefers-reduced-motion: reduce) { .logo .face { animation: none; } }

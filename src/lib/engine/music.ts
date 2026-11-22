@@ -17,6 +17,22 @@ export function toMusicProfile(music: MusicInput, text: TextAnalysis): MusicProf
     };
   }
 
+  if (music.analysis) {
+    const a = music.analysis;
+    return {
+      origin: "preview-analysis",
+      bpm: a.bpm,
+      energy: a.energy,
+      brightness: a.brightness,
+      percussiveness: a.percussiveness,
+      mode: a.mode,
+      key: a.key,
+      genre: null,
+      mood: null,
+      envelope: a.envelope,
+    };
+  }
+
   const feel = music.feel;
   const bpm = feel?.bpm ?? Math.round(72 + text.arousal * 60);
   const energy = feel ? feel.energy : 0.3 + text.arousal * 0.5;

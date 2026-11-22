@@ -174,7 +174,7 @@ export function buildDesign({ text, photos, music, seed }: Inputs): MemoryDesign
   };
   say(
     "music",
-    `${music.origin === "audio-analysis" ? "Measured" : music.origin === "creator-tapped" ? "Tapped" : "Assumed"} ${bpm} BPM, ${music.mode === "unknown" ? "mode unknown" : music.mode}${music.key ? ` (${music.key})` : ""}, energy ${pct(music.energy)}`,
+    `${music.origin === "audio-analysis" || music.origin === "preview-analysis" ? "Measured" : music.origin === "creator-tapped" ? "Tapped" : "Assumed"} ${bpm} BPM, ${music.mode === "unknown" ? "mode unknown" : music.mode}${music.key ? ` (${music.key})` : ""}, energy ${pct(music.energy)}`,
     `Reel cuts every ${beatsPerCut} beat${beatsPerCut > 1 ? "s" : ""} (${((beatsPerCut * beatMs) / 1000).toFixed(1)} s) with ${transition} transitions; the generative layer breathes on the beat`,
   );
 

@@ -88,6 +88,8 @@ export type MusicInput =
       artist: string | null;
       thumbnail: string | null;
       feel: MusicFeel | null;
+      /** Measured in the browser from the song's official 30-second preview (never stored). */
+      analysis?: AudioAnalysis | null;
     };
 
 export interface MediaRef {
@@ -106,7 +108,7 @@ export interface PhotoInput {
 }
 
 export interface MusicProfile {
-  origin: "audio-analysis" | "creator-tapped" | "default";
+  origin: "audio-analysis" | "preview-analysis" | "creator-tapped" | "default";
   bpm: number;
   energy: number;
   brightness: number;
@@ -220,4 +222,26 @@ export type EntrySummary = Pick<
   song: string;
   photoCount: number;
   keywords: string;
+  /** Mood of the day's words (missing on entries saved before it existed — filled in on read). */
+  mood?: DayMood;
 };
+
+export type DayMood = "radiant" | "bright" | "calm" | "mixed" | "low" | "stormy" | "blank";
+
+/** A real track from the song search (Spotify, or the public iTunes catalogue as a fallback). */
+export interface TrackHit {
+  id: string;
+  title: string;
+  artist: string;
+  album: string | null;
+  image: string | null;
+  /** Link stored with the memory (Spotify track, or Apple Music in the fallback). */
+  url: string;
+  embedUrl: string | null;
+  /** Always a Spotify page: the track itself, or a Spotify search for it. */
+  spotifyUrl: string;
+  previewUrl: string | null;
+  durationMs: number | null;
+  explicit: boolean;
+  source: "spotify" | "itunes";
+}

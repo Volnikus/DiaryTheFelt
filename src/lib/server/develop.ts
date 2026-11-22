@@ -7,7 +7,7 @@ import { toMusicProfile } from "../engine/music";
 import { hashString } from "../engine/random";
 import { parseMusicLink } from "../music-link";
 import { mediaUrl, ownsKey } from "./storage";
-import { aiTitle } from "./ai";
+import { aiMemoryWords } from "./ai";
 
 const unit = z.number().min(0).max(1);
 const MediaIn = z.object({ key: z.string().min(1).max(300), contentType: z.string().max(100), size: z.number().int().nonnegative() });
@@ -42,6 +42,7 @@ export const EntryInput = z.object({
     z.object({
       kind: z.literal("link"),
       url: z.string().url().max(600),
+      analysis: AudioAnalysisIn.nullable().optional(),
       title: z.string().max(200).nullable().optional(),
       artist: z.string().max(200).nullable().optional(),
       feel: z.object({ bpm: z.number().min(40).max(220).nullable(), energy: unit, mode: z.enum(["major", "minor", "unknown"]) }).nullable().optional(),
@@ -103,6 +104,7 @@ export async function developEntry(input: EntryInputT, opts: DevelopOptions): Pr
     const prev = opts.previous?.music;
     music = prev?.kind === "link" && prev.url === input.music.url ? { ...prev } : await resolveLink(input.music.url);
     music.feel = input.music.feel ?? null;
+    if (input.music.analysis) music.analysis = input.music.analysis;
     music.title ??= input.music.title ?? null;
     music.artist ??= input.music.artist ?? null;
   }
@@ -124,10 +126,18 @@ export async function developEntry(input: EntryInputT, opts: DevelopOptions): Pr
   const now = new Date().toISOString();
   const manualTitle = input.title?.trim();
   const keepLocked = opts.previous?.titleLocked && !input.title;
-  if (!manualTitle && !keepLocked) {
-    const named = await aiTitle(input.text);
-    analysis.title = named.title;
-    if (named.source === "ai") notes.push("The title was chosen by AI from your words.");
+  // With AI configured, real entries get an AI-written title (unless the writer chose one) and atmosphere line.
+  // Demos, AI being off, and any failure keep Felt's own title and line.
+  if (!opts.demo) {
+    const words = await aiMemoryWords(input.text);
+    if (words.title && !manualTitle && !keepLocked) {
+      analysis.title = words.title;
+      notes.push("The title was written by AI from your words.");
+    }
+    if (words.line) {
+      analysis.atmosphereLine = words.line;
+      notes.push("The atmosphere line was written by AI from your words.");
+    }
   }
   return {
     id: opts.id,

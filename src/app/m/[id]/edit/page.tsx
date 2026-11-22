@@ -17,10 +17,10 @@ export default async function EditPage(props: PageProps<"/m/[id]/edit">) {
     <main className="wrap" style={{ paddingTop: "var(--s-7)", paddingBottom: "var(--s-10)" }}>
       <header style={{ marginBottom: "var(--s-8)", maxWidth: 900 }}>
         <Link href={`/m/${entry.id}`} className="meta">← Back to the memory</Link>
-        <h1 className="display" style={{ fontSize: "var(--t-1)", marginTop: "var(--s-4)" }}>
-          Edit <em>{entry.title}</em>
+        <h1 className="display" style={{ fontSize: "clamp(2rem, 3.6vw, 2.8rem)", marginTop: "var(--s-4)" }}>
+          Edit “{entry.title}”
         </h1>
-        <p className="lede" style={{ marginTop: "var(--s-5)" }}>Change anything — the memory will be developed again from what you keep.</p>
+        <p className="lede" style={{ marginTop: "var(--s-3)", fontSize: "1.05rem" }}>Change anything you like. The memory is rebuilt from what you keep.</p>
       </header>
       <Composer config={appConfig()} initial={{ ...entry, owner: "" }} />
     </main>

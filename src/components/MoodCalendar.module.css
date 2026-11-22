@@ -1,0 +1,15 @@
+.wrap { display: grid; gap: var(--s-5); }
+.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--s-4); }
+.legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); font-size: 0.8rem; color: var(--paper-2); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; }
+.legend em { font-style: normal; font-family: var(--font-ui); font-size: 0.72rem; color: var(--paper-dim); }
+.months { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--s-5) var(--s-4); }
+.month { display: grid; gap: var(--s-2); }
+.mname { margin: 0; font-family: var(--font-ui); font-size: 0.72rem; letter-spacing: 0; color: var(--paper-dim); }
+.grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.grid > * { aspect-ratio: 1; border-radius: 2px; }
+.empty { background: rgba(22, 22, 22, 0.05); }
+.empty[data-today] { outline: 1px solid var(--accent); outline-offset: 1px; }
+.day { display: block; transition: transform var(--d-fast) var(--ease-out), box-shadow var(--d-fast); }
+.day:hover, .day:focus-visible { transform: scale(1.35); box-shadow: 0 0 12px currentColor; z-index: 1; position: relative; }

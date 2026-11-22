@@ -2,5 +2,5 @@
 .caret { display: inline-block; width: 2px; height: 1.1em; margin-left: 2px; vertical-align: -0.18em; background: var(--safelight); animation: blink 1s steps(1) infinite; box-shadow: 0 0 10px var(--safelight); }
 @keyframes blink { 50% { opacity: 0; } }
 .eq { display: flex; align-items: center; gap: 4px; height: 72px; }
-.eq i { flex: 1; border-radius: 4px; background: linear-gradient(180deg, var(--safelight), var(--accent)); transform-origin: center; animation: bounce ease-in-out infinite alternate; opacity: 0.9; }
+.eq i { flex: 1; border-radius: 4px; background: var(--accent); transform-origin: center; animation: bounce ease-in-out infinite alternate; opacity: 0.9; }
 @keyframes bounce { from { transform: scaleY(0.25); } to { transform: scaleY(1); } }

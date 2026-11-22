@@ -10,13 +10,12 @@ export default async function NewPage({ searchParams }: { searchParams: Promise<
   const draft = typeof text === "string" ? text.slice(0, 2000) : undefined;
   return (
     <main className="wrap" style={{ paddingTop: "var(--s-7)", paddingBottom: "var(--s-10)" }}>
-      <header style={{ marginBottom: "var(--s-8)", maxWidth: 1000 }}>
-        <p className="meta section-label" style={{ marginBottom: "var(--s-4)" }}>a new day</p>
-        <h1 className="display" style={{ fontSize: "clamp(3rem, 9vw, 8rem)" }}>
-          How did today <em>feel?</em>
+      <header style={{ marginBottom: "var(--s-6)", maxWidth: 720 }}>
+        <h1 className="display" style={{ fontSize: "clamp(2rem, 3.6vw, 2.8rem)" }}>
+          How did today feel?
         </h1>
-        <p className="lede" style={{ marginTop: "var(--s-5)" }}>
-          Write it down, add the photographs you took and the song that stayed with you. Mote counts how it felt as you type, the theme blends itself from your words, and Nimbus the cloud is around if you want to talk.
+        <p className="lede" style={{ marginTop: "var(--s-3)", fontSize: "1.05rem", maxWidth: "60ch" }}>
+          Write it down, add the photographs you took and the song that stayed with you. Felt reads the mood as you type. If you want help finding words, the optional AI helper is in the corner.
         </p>
       </header>
       <Composer config={appConfig()} draft={draft} />
