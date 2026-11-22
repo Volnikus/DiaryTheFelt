@@ -1,0 +1,60 @@
+/* A pinned scene: the section is tall, the page holds still and fills itself in as you scroll. */
+.story { position: relative; height: 380vh; margin-top: clamp(64px, 8vw, 112px); }
+.pin { position: sticky; top: 64px; height: calc(100svh - 64px); display: grid; align-items: center; overflow: hidden; }
+.grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: clamp(32px, 5vw, 80px); align-items: center; }
+
+.h2 { font-size: var(--t-1); margin: 8px 0 32px; max-width: 14ch; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.steps li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; align-items: start; padding: 12px 0; border-top: 1px solid var(--line); color: var(--paper-dim); transition: color 200ms var(--ease-out); }
+.steps li[data-on] { color: var(--paper); }
+.steps li[data-done] h3 { color: var(--paper-2); }
+.num { display: grid; place-items: center; height: 32px; font-family: var(--font-hand); font-size: 1.6rem; font-weight: 600; line-height: 1; color: var(--pen); }
+.steps li:not([data-on]) .num { color: var(--paper-faint); }
+.steps h3 { margin: 4px 0 0; font-family: var(--font-display); font-variation-settings: "SOFT" 60, "WONK" 1; font-size: 1.3rem; font-weight: 500; letter-spacing: -0.01em; }
+.steps p { margin: 8px 0 0; overflow: hidden; color: var(--paper-2); line-height: 1.55; font-size: 0.98rem; max-width: 34ch; }
+
+/* the stage */
+.stage { position: relative; height: min(64svh, 560px); }
+.page { position: absolute; inset: 0; padding: 32px 32px 24px calc(var(--cell) * 2 + 20px); border-radius: var(--r-1); box-shadow: var(--shadow-1); transform-origin: 30% 70%; display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); gap: 16px; will-change: transform; }
+.lines { display: grid; gap: 0; min-width: 0; }
+.line { margin: 0; font-size: clamp(1.05rem, 1.5vw, 1.25rem); line-height: calc(var(--cell) * 2); color: var(--pen); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.photos { position: relative; }
+.photo { position: absolute; margin: 0; width: clamp(120px, 14vw, 176px); padding: 8px 8px 24px; background: var(--sheet); box-shadow: var(--shadow-photo); will-change: transform; }
+.photo:nth-child(1) { left: 0; top: 4%; }
+.photo:nth-child(2) { left: 32%; top: 14%; }
+.photo:nth-child(3) { left: 62%; top: 2%; }
+.photo img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.photoTape { top: -10px; left: 50%; margin-left: -40px; width: 80px; height: 22px; transform-origin: center; }
+
+.song { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: var(--tape); border-radius: 2px; transform: rotate(-1deg); width: fit-content; max-width: 100%; }
+.bars { display: flex; align-items: center; gap: 3px; height: 36px; }
+.bars i { display: block; width: 4px; height: 100%; border-radius: 2px; background: var(--pen); transform-origin: center; }
+.songMeta { font-size: 0.86rem; color: #4A3C08; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.memory { position: absolute; right: 4%; top: 4%; width: min(380px, 70%); padding: 12px; background: var(--sheet); box-shadow: var(--shadow-photo); will-change: transform; }
+.memTape { top: -12px; left: 50%; margin-left: -46px; transform: rotate(-3deg); }
+
+/* reduced motion: the same story, laid out flat */
+.static { padding-top: clamp(80px, 9vw, 128px); }
+.staticSteps { list-style: none; margin: 24px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+.staticSteps h3 { margin: 4px 0 0; font-family: var(--font-display); font-size: 1.25rem; font-weight: 500; }
+.staticSteps p { margin: 8px 0 0; color: var(--paper-2); }
+
+@media (max-width: 900px) {
+  .story { height: 340vh; }
+  .grid { grid-template-columns: 1fr; gap: 16px; align-content: center; }
+  .h2 { margin-bottom: 12px; font-size: var(--t-2); }
+  .steps li { padding: 8px 0; }
+  .steps li:not([data-on]) { display: none; }
+  .stage { height: 52svh; }
+  .page { padding: 20px 16px 16px calc(var(--cell) * 2 + 12px); }
+  .photo { width: 30%; padding: 4px 4px 12px; }
+  .photo:nth-child(2) { left: 34%; }
+  .photo:nth-child(3) { left: 68%; }
+  .photoTape { width: 56px; height: 16px; margin-left: -28px; top: -8px; }
+  .memory { right: 4%; top: 2%; width: min(260px, 66%); padding: 8px; }
+  .bars { gap: 2px; }
+  .bars i { width: 3px; }
+  .staticSteps { grid-template-columns: 1fr 1fr; }
+}

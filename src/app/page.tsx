@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Equalizer, Typewriter } from "@/components/Alive";
 import { HomeWriter } from "@/components/HomeWriter";
 import { MemoryCard } from "@/components/MemoryCard";
-import { Arrow, Circled, Underline } from "@/components/Sketch";
+import { Arrow, Underline } from "@/components/Sketch";
+import { StoryScroll } from "@/components/StoryScroll";
+import { TossIn } from "@/components/TossIn";
 import { Transform } from "@/components/Transform";
 import { repo } from "@/lib/server/db";
 import { currentOwnerOrNull } from "@/lib/server/owner";
@@ -33,9 +34,9 @@ export default async function Home() {
   const recent = all.filter((e) => !e.demo).slice(0, 3);
   const examples = all.filter((e) => e.demo);
   const preview = recent.length ? recent : examples.slice(0, 3);
-  const swatches = demos.flatMap((d) => d.photos.slice(0, 2).flatMap((p) => p.analysis.palette.slice(0, 3).map((c) => c.hex))).slice(0, 12);
   const sample = demos.find((d) => d.id.startsWith("demo-autumn")) ?? demos[0];
   const heroCard = examples.find((e) => e.id === sample?.id) ?? examples[0];
+  const lines = sample ? wrapLines(sample.text, 44, 4) : [];
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
 
   return (
@@ -43,66 +44,50 @@ export default async function Home() {
       {/* ---------- the open notebook ---------- */}
       <section className={`wrap ${s.spread}`}>
         <div className={s.left}>
-          <p className={`hand ${s.date}`}>{today.toLowerCase()}</p>
+          <p className={`hand ${s.date} ${s.rise}`}>{today.toLowerCase()}</p>
           <h1 className={`display ${s.title}`}>
-            Write down how today <Underline delay={300}>felt</Underline>
+            {"Write down how today".split(" ").map((w, i) => (
+              <span key={w} className={s.word} style={{ ["--i" as string]: i + 1 }}>{w} </span>
+            ))}
+            <span className={s.word} style={{ ["--i" as string]: 5 }}><Underline delay={1000}>felt</Underline></span>
           </h1>
-          <p className={s.lede}>
+          <p className={`${s.lede} ${s.rise}`} style={{ ["--i" as string]: 6 }}>
             Add your photos and the song you had on. Felt reads the mood of your words and turns the page into a short animated memory, kept private in your browser.
           </p>
-          <HomeWriter />
+          <div className={s.rise} style={{ ["--i" as string]: 7 }}>
+            <HomeWriter />
+          </div>
         </div>
 
         {heroCard && (
           <figure className={s.right}>
-            <div className={s.polaroid}>
+            <div className={`${s.polaroid} ${s.land}`}>
               <span className={`tape ${s.tapeTop}`} aria-hidden />
               <MemoryCard entry={heroCard} priority />
             </div>
             {sample && (
-              <figcaption className={`hand ${s.caption}`}>
+              <figcaption className={`hand ${s.caption} ${s.late}`}>
                 <Arrow direction="left" className={s.captionArrow} />
                 made from {sample.photos.length} photos, {sample.text.split(/\s+/).length} words
                 <br />and a {sample.musicProfile.bpm} bpm song
               </figcaption>
             )}
-            {sample && <Link href={`/m/${sample.id}`} className={s.peek}>Open this memory</Link>}
+            {sample && <Link href={`/m/${sample.id}`} className={`${s.peek} ${s.late}`}>Open this memory</Link>}
           </figure>
         )}
       </section>
 
-      {/* ---------- how it works ---------- */}
-      <section className={`wrap cv ${s.section}`}>
-        <p className="section-label">How it works</p>
-        <h2 className={`display ${s.h2}`}>Three things on one page</h2>
-        <ol className={s.steps}>
-          <li className={s.note}>
-            <span className={s.num}><Circled>1</Circled></span>
-            <h3>Write the day</h3>
-            <p>Where you were, who was there, how heavy it felt. The words set the pace, the light and the handwriting.</p>
-            <div className={s.demo}>
-              <Typewriter text={sample ? sample.text.split(". ").slice(0, 2).join(". ") + "." : "We walked through the park after lunch."} />
-            </div>
-          </li>
-          <li className={s.note}>
-            <span className={s.num}><Circled>2</Circled></span>
-            <h3>Tape in your photos</h3>
-            <p>Each photo is read for colour, light and focus. Its colours become the paint of the memory.</p>
-            <div className={s.demo}>
-              <div className={s.swatches}>{swatches.map((c, i) => <i key={i} style={{ background: c, ["--r" as string]: `${(i % 5) * 7 - 14}deg` }} />)}</div>
-            </div>
-          </li>
-          <li className={s.note}>
-            <span className={s.num}><Circled>3</Circled></span>
-            <h3>Add the song</h3>
-            <p>Let Nimbus pick one, search, upload a file or paste a link. Its tempo times every cut.</p>
-            <div className={s.demo}>
-              <Equalizer bpm={sample?.musicProfile.bpm ?? 96} />
-              <span className="meta">{sample ? `${sample.musicProfile.bpm} bpm · ${sample.musicProfile.key ?? sample.musicProfile.mode}` : "tempo · energy · key"}</span>
-            </div>
-          </li>
-        </ol>
-      </section>
+      {/* ---------- how it works: the page fills itself in as you scroll ---------- */}
+      {sample && heroCard ? (
+        <StoryScroll
+          lines={lines}
+          photos={sample.photos.map((p) => p.media.url)}
+          envelope={sample.musicProfile.envelope}
+          bpm={sample.musicProfile.bpm}
+          keyLabel={sample.musicProfile.key ?? sample.musicProfile.mode}
+          memory={heroCard}
+        />
+      ) : null}
 
       {/* ---------- a finished memory ---------- */}
       <section className={`wrap cv ${s.section}`}>
@@ -158,10 +143,10 @@ export default async function Home() {
           </div>
           <div className={s.cards}>
             {preview.map((e, i) => (
-              <div key={e.id} className={s.pinned} style={{ ["--tilt" as string]: `${[-1.6, 1.1, -0.6][i % 3]}deg` }}>
+              <TossIn key={e.id} className={s.pinned} tilt={[-1.6, 1.1, -0.6][i % 3]} index={i}>
                 <span className={`tape ${s.tapeCorner}`} aria-hidden />
                 <MemoryCard entry={e} />
-              </div>
+              </TossIn>
             ))}
           </div>
         </section>
@@ -178,4 +163,16 @@ export default async function Home() {
       </section>
     </main>
   );
+}
+
+/** Break the sample day into a few short lines, as if written on the page by hand. */
+function wrapLines(text: string, width: number, max: number) {
+  const out: string[] = [];
+  let line = "";
+  for (const w of text.split(/\s+/)) {
+    if ((line + " " + w).trim().length > width) { out.push(line.trim()); line = w; if (out.length === max) break; }
+    else line = `${line} ${w}`;
+  }
+  if (out.length < max && line.trim()) out.push(line.trim());
+  return out.slice(0, max);
 }

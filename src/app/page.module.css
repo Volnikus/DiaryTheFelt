@@ -20,15 +20,6 @@
 .h2 { font-size: var(--t-1); margin: 8px 0 16px; max-width: 20ch; }
 .sub { margin: 0 0 32px; max-width: 36rem; color: var(--paper-2); line-height: 1.6; }
 
-.steps { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-.note { display: grid; gap: 8px; align-content: start; padding: 24px; background: var(--sheet); border-radius: var(--r-3); box-shadow: var(--shadow-1); }
-/* the circled number is the pen signature */
-.num { font-family: var(--font-hand); font-size: 1.6rem; font-weight: 600; color: var(--pen); line-height: 1; justify-self: start; padding: 4px; margin-bottom: 4px; }
-.note h3 { margin: 0; font-family: var(--font-display); font-variation-settings: "SOFT" 60, "WONK" 1; font-size: 1.35rem; font-weight: 500; letter-spacing: -0.01em; }
-.note p { margin: 0; color: var(--paper-2); line-height: 1.55; font-size: 0.95rem; }
-.demo { margin-top: 12px; min-height: 136px; padding: 16px; display: grid; align-content: center; gap: 8px; background: var(--ink-0); border-radius: 4px; color: var(--paper-2); font-size: 0.92rem; }
-.swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-.swatches i { aspect-ratio: 1; border-radius: 4px; }
 
 .split { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: clamp(32px, 5vw, 80px); align-items: start; }
 .styles { list-style: none; margin: 0; padding: 0; display: grid; }
@@ -48,12 +39,30 @@
 .rowHead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 32px; }
 .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
 /* photos are taped in, a little crooked — the only tilted things on the page */
-.pinned { position: relative; padding: 12px; background: var(--sheet); box-shadow: var(--shadow-photo); transform: rotate(var(--tilt)); }
+.pinned { position: relative; padding: 12px; background: var(--sheet); box-shadow: var(--shadow-photo); }
 .tapeCorner { top: -8px; right: -16px; transform: rotate(38deg); width: 80px; }
 
 .final { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px; padding: 32px; background: var(--sheet); border-radius: var(--r-3); box-shadow: var(--shadow-1); }
 .final .h2 { margin: 0 0 8px; }
 .final p { margin: 0; color: var(--paper-2); }
+
+/* the one entrance: the date is written, the headline rises word by word, the pen underlines "felt",
+   then the memory is tossed onto the page and taped down */
+.rise, .word { animation: rise 700ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 70ms); }
+.word { display: inline-block; white-space: pre; }
+@keyframes rise { from { opacity: 0; transform: translateY(0.4em); } }
+.land { animation: land 900ms var(--ease-out) 450ms both; }
+@keyframes land {
+  0% { opacity: 0; transform: translate(40px, -90px) rotate(12deg) scale(1.06); }
+  60% { opacity: 1; }
+  100% { transform: rotate(2deg); }
+}
+.land .tapeTop { animation: press 360ms var(--ease-out) 1250ms both; }
+@keyframes press { from { opacity: 0; transform: rotate(-3deg) scale(1.25, 1.6); } }
+.late { animation: rise 600ms var(--ease-out) 1500ms both; }
+@media (prefers-reduced-motion: reduce) {
+  .rise, .word, .land, .land .tapeTop, .late { animation: none; }
+}
 
 @media (max-width: 980px) {
   .spread { grid-template-columns: 1fr; min-height: 0; padding-top: 32px; }
@@ -61,7 +70,7 @@
   .split { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
-  .steps, .cards, .extras { grid-template-columns: 1fr; }
+  .cards, .extras { grid-template-columns: 1fr; }
   .styles li { grid-template-columns: 1fr; gap: 4px; }
   .when { text-align: left; }
   .final { padding: 24px; }

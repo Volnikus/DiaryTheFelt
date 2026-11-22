@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { countMood } from "@/lib/analysis/mood";
 import { analyzeTextLocally } from "@/lib/analysis/text";
@@ -53,6 +54,9 @@ export function HomeWriter() {
   const themed = settled.hits.length > 0;
   const color = themed ? blend.palette.accent : "#8FB4FF";
 
+  const reduce = useReducedMotion();
+  const gulp = mood.hits.length;
+
   const pick = (e: string) => { setTouched(true); setText(e); area.current?.focus(); };
 
   return (
@@ -86,7 +90,27 @@ export function HomeWriter() {
       </div>
 
       <div className={s.mote}>
-        <MoodDoodle mood={mood} color={color} size={150} />
+        {/* every mood word the pen finds becomes a drop of ink that flies into Mote */}
+        {!reduce && (
+          <div className={s.drops} aria-hidden>
+            {mood.hits.map((h, i) => (
+              <motion.i
+                key={`${i}-${h.word}`}
+                style={{ background: h.score > 0 ? color : "#6E7FA8" }}
+                initial={{ x: -260, y: 70, scale: 0.6, opacity: 0 }}
+                animate={{ x: [-260, -130, 0], y: [70, -70, 0], scale: [0.6, 1, 0.35], opacity: [0, 1, 1, 0] }}
+                transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], times: [0, 0.55, 1] }}
+              />
+            ))}
+          </div>
+        )}
+        <motion.div
+          className={s.body}
+          animate={reduce ? undefined : { scale: gulp % 2 ? [1, 0.9, 1.05, 1] : [1, 0.91, 1.04, 1] }}
+          transition={{ duration: 0.5, delay: gulp ? 0.6 : 0, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <MoodDoodle mood={mood} color={color} size={150} />
+        </motion.div>
         <p className="hand">feels {WORD[mood.mood]}</p>
         <p className={s.counts}>{mood.positive} good · {mood.negative} hard · {face.label}</p>
       </div>

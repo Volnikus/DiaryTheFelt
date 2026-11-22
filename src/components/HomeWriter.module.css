@@ -15,13 +15,19 @@
 .tries button { font-size: 0.88rem; color: var(--pen); text-decoration: underline; text-decoration-color: rgba(35, 70, 184, 0.35); text-underline-offset: 3px; transition: text-decoration-color 160ms var(--ease-out); }
 .tries button:hover { text-decoration-color: var(--pen); }
 
-.mote { display: grid; justify-items: center; gap: 4px; width: 168px; }
+.mote { position: relative; display: grid; justify-items: center; gap: 4px; width: 168px; }
+.body { display: grid; place-items: center; }
+/* the drops start over the writing page and land in Mote's middle */
+.drops { position: absolute; left: 50%; top: 75px; width: 0; height: 0; pointer-events: none; z-index: 2; }
+.drops i { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50% 50% 50% 8%; rotate: 45deg; filter: url(#felt-watercolor); opacity: 0; }
 .mote :global(.hand) { margin: 4px 0 0; font-size: 1.5rem; text-align: center; }
 .counts { margin: 0; font-size: 0.8rem; color: var(--paper-dim); text-align: center; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 760px) {
   .writer { grid-template-columns: 1fr; }
   .mote { order: -1; width: auto; grid-template-columns: auto 1fr; justify-items: start; align-items: center; column-gap: 12px; }
-  .mote svg { width: 88px; height: 88px; grid-row: span 2; }
+  .mote svg { width: 88px; height: 88px; }
+  .body { grid-row: span 2; }
+  .drops { display: none; }
   .mote :global(.hand), .counts { text-align: left; }
 }
