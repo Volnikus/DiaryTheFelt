@@ -21,6 +21,7 @@ const STYLES: [string, string, string][] = [
 ];
 
 const EXTRAS = [
+  ["/recap", "Weekly and monthly recaps", "every week and month as one card for Instagram: the mood, the words, the photos and the song"],
   ["/year", "Year in review", "a short story of your year: moods, the colour of each month, the songs that kept coming back"],
   ["/archive", "Mood calendar", "every day you wrote, coloured by how it felt"],
   ["/archive", "Postcards and stories", "save any day as a postcard or a 9:16 picture"],

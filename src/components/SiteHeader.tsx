@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/", label: "Home" },
   { href: "/archive", label: "Archive" },
   { href: "/year", label: "Year" },
+  { href: "/recap", label: "Recaps" },
 ];
 
 export function SiteHeader() {
@@ -71,8 +72,8 @@ export function SiteHeader() {
             )}
           </svg>
         </button>
-        <Link href="/new" className={`btn btn-primary btn-small ${s.cta}`}>
-          <span className={s.plus} aria-hidden>+</span> new day
+        <Link href="/new" className={`btn btn-primary btn-small ${s.cta}`} aria-label="New day">
+          <span className={s.plus} aria-hidden>+</span><span className={s.ctaText}> new day</span>
         </Link>
       </nav>
     </header>

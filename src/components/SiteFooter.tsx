@@ -12,6 +12,7 @@ export function SiteFooter() {
           <Link href="/new">New day</Link>
           <Link href="/archive">Archive</Link>
           <Link href="/year">Year in review</Link>
+          <Link href="/recap">Recaps</Link>
         </nav>
       </div>
     </footer>

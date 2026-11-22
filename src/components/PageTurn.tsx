@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { sfx } from "@/lib/client/sound";
 
 // How deep into the notebook each page sits: going deeper turns the page forward, going back turns it back.
-const depth = (p: string) => (p === "/" ? 0 : p.startsWith("/archive") ? 1 : p.startsWith("/new") ? 1 : p.startsWith("/year") ? 2 : p.startsWith("/m/") ? 3 : 1);
+const depth = (p: string) => (p === "/" ? 0 : p.startsWith("/archive") ? 1 : p.startsWith("/new") ? 1 : p.startsWith("/year") || p.startsWith("/recap") ? 2 : p.startsWith("/m/") ? 3 : 1);
 
 /**
  * Moving between pages turns the leaf of the notebook: the old page lifts off the spine

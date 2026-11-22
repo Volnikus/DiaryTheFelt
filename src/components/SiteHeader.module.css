@@ -30,6 +30,10 @@
   .pill { height: 58px; gap: 4px; }
   .link { padding: 0 9px; }
   .links a:first-child { display: none; }
-  .sound { width: 34px; margin-left: 0; }
+  .sound { width: 32px; margin-left: 0; }
+  .link { padding: 0 7px; font-size: 0.92rem; }
+  .cta { width: 40px; height: 40px; padding: 0; justify-content: center; border-radius: 50%; }
+  .cta .plus { font-size: 1.4rem; margin-top: -2px; }
+  .ctaText { display: none; }
   .brand b { font-size: 1.5rem; }
 }

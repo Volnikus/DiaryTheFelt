@@ -20,6 +20,21 @@ export interface YearStats {
 const STOP = new Set(`the and that this with from have had has was were are been being for not but you your yours they them their there then than what when where which who whom why how all any some just very really also into onto over under again more most much many such only own same too can will would could should about after before because while until each other both few down out off once here once ours ourselves him his her hers its itself she himself herself myself today day days felt feel feeling went got get getting going like little bit lot even still back made make did does doing done one two three first last next time times thing things way something nothing everything anything someone everyone people around though through without within upon among our out its it's i'm i've don't didn't can't won't wasn't isn't
 это как так что все она они оно мне меня мой моя мои его еще уже был была было были быть очень когда тоже только потом себя тебя тебе вот там тут где для или ничего сегодня день`.split(/\s+/));
 
+/** The words a set of days kept coming back to (counted once per day, common words skipped). */
+export function topWords(list: Pick<EntrySummary, "keywords">[], n: number): { word: string; count: number }[] {
+  const wordCount = new Map<string, number>();
+  for (const e of list) {
+    const seen = new Set<string>();
+    for (const w of e.keywords.match(/[\p{L}']{4,}/gu) ?? []) {
+      const word = w.toLowerCase();
+      if (STOP.has(word) || seen.has(word)) continue;
+      seen.add(word);
+      wordCount.set(word, (wordCount.get(word) ?? 0) + 1);
+    }
+  }
+  return [...wordCount].map(([word, count]) => ({ word, count })).sort((a, b) => b.count - a.count).slice(0, n);
+}
+
 const card = (e: EntrySummary) => ({ id: e.id, title: e.title, day: e.day, cover: e.cover });
 
 export function yearStats(all: EntrySummary[], year: number): YearStats {
@@ -40,17 +55,7 @@ export function yearStats(all: EntrySummary[], year: number): YearStats {
   for (const e of list) if (e.song && !/^https?:/.test(e.song)) songCount.set(e.song, (songCount.get(e.song) ?? 0) + 1);
   const songs = [...songCount].map(([song, count]) => ({ song, count })).sort((a, b) => b.count - a.count).slice(0, 5);
 
-  const wordCount = new Map<string, number>();
-  for (const e of list) {
-    const seen = new Set<string>();
-    for (const w of e.keywords.match(/[\p{L}']{4,}/gu) ?? []) {
-      const word = w.toLowerCase();
-      if (STOP.has(word) || seen.has(word)) continue;
-      seen.add(word);
-      wordCount.set(word, (wordCount.get(word) ?? 0) + 1);
-    }
-  }
-  const words = [...wordCount].map(([word, count]) => ({ word, count })).sort((a, b) => b.count - a.count).slice(0, 12);
+  const words = topWords(list, 12);
 
   const days = [...new Set(list.map((e) => e.day))].sort();
   let streak = days.length ? 1 : 0, run = 1;
