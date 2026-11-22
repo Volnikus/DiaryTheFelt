@@ -11,9 +11,10 @@ import { cleanInput, fence, scrubReply } from "../ai/guard";
  * tried in order; one that hits its limit is skipped until it resets (Retry-After), and the request
  * moves straight to the next. Keys come only from environment variables and never reach the browser.
  *
- * Order: xAI Grok (paid; only when FELT_PAID_AI=on and XAI_API_KEY is set) → Claude (only if
- *        ANTHROPIC_API_KEY is set) → Groq gpt-oss-120b → Gemini Flash-Lite → Groq gpt-oss-20b →
- *        Mistral (only if MISTRAL_API_KEY is set). The free providers stay as backups behind the paid one.
+ * Order: xAI Grok first for the AI song pick (felt-music) whenever XAI_API_KEY is set, and for every
+ *        preset when FELT_PAID_AI=on → Claude (only if ANTHROPIC_API_KEY is set) → Groq gpt-oss-120b →
+ *        Gemini Flash-Lite → Groq gpt-oss-20b → Mistral (only if MISTRAL_API_KEY is set) → Grok again as
+ *        the last fallback for chat and titles, so the site keeps answering when the free quotas run out.
  */
 
 export type PresetName = "felt-chat" | "felt-title" | "felt-music" | "felt-memory";
@@ -38,12 +39,14 @@ interface Provider {
 
 const env = (name: string) => process.env[name]?.trim() || "";
 
-export function providers(): Provider[] {
+export function providers(preset?: PresetName): Provider[] {
   const list: Provider[] = [];
-  // Paid Grok is switched on deliberately (FELT_PAID_AI=on), so the credit is spent only when wanted, e.g. for judging.
-  if (env("XAI_API_KEY") && env("FELT_PAID_AI") === "on") {
-    list.push({ id: "xai", kind: "openai", model: env("XAI_MODEL") || "grok-4.3", key: env("XAI_API_KEY"), url: "https://api.x.ai/v1/chat/completions" });
-  }
+  // Our Grok key: always first for the AI song pick; first for everything only when FELT_PAID_AI=on.
+  const xai: Provider | null = env("XAI_API_KEY")
+    ? { id: "xai", kind: "openai", model: env("XAI_MODEL") || "grok-4.20-non-reasoning", key: env("XAI_API_KEY"), url: "https://api.x.ai/v1/chat/completions" }
+    : null;
+  const grokFirst = Boolean(xai) && (preset === "felt-music" || env("FELT_PAID_AI") === "on");
+  if (xai && grokFirst) list.push(xai);
   if (env("ANTHROPIC_API_KEY")) list.push({ id: "claude", kind: "claude", model: env("CLAUDE_MODEL") || "claude-opus-5-5", key: env("ANTHROPIC_API_KEY") });
 
   const groqKey = env("GROQ_API_KEY");
@@ -67,6 +70,7 @@ export function providers(): Provider[] {
   if (env("MISTRAL_API_KEY")) {
     list.push({ id: "mistral", kind: "openai", model: env("MISTRAL_MODEL") || "mistral-small-latest", key: env("MISTRAL_API_KEY"), url: "https://api.mistral.ai/v1/chat/completions" });
   }
+  if (xai && !grokFirst) list.push(xai);
   return list;
 }
 
@@ -207,7 +211,7 @@ export interface Generated { text: string; finish: string; provider: string; inp
 export async function generate(preset: PresetName, turns: Turn[], context: string | null, onText: ((delta: string) => void) | null, signal: AbortSignal): Promise<Generated> {
   const p = PRESETS[preset];
   const system = context && p.contextAllowed ? `${p.system}\n\nToday's diary text so far (context only):\n${fence("diary_text", cleanInput(context, 1500))}` : p.system;
-  const list = providers();
+  const list = providers(preset);
   if (!list.length) throw new AllBusyError("AI is not configured on this server.");
 
   const available = list.filter((x) => !cooling(x.id));
